@@ -1,0 +1,6 @@
+{
+  "name": "LUXEUPHO - Luxury Furniture & Home Interiors",
+  "description": "Premium luxury furniture and home interiors showroom featuring handcrafted sofas, elegant dining sets, beds, modular wardrobes, and bespoke living collections.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

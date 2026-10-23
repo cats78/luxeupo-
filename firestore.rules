@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'rayanali5698@gmail.com' ||
+        request.auth.token.email == 'luxeuphohomeinteriors@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // Products collection: public read, admin write
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Categories collection: public read, admin write
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Banners collection: public read, admin write
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Settings collection: public read, admin write
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Orders collection:
+    // Anyone can create an order if they supply valid details (name, phone, address, items, total).
+    // Read and status updates restricted to admins or order creator (PII protection).
+    match /orders/{orderId} {
+      allow create: if incoming().customerName is string &&
+                       incoming().customerName.size() > 0 && incoming().customerName.size() <= 150 &&
+                       incoming().customerPhone is string &&
+                       incoming().customerPhone.size() >= 7 && incoming().customerPhone.size() <= 25 &&
+                       incoming().shippingAddress is string &&
+                       incoming().shippingAddress.size() > 0 && incoming().shippingAddress.size() <= 600 &&
+                       incoming().total is number && incoming().total >= 0 &&
+                       incoming().items is list && incoming().items.size() > 0;
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // Enquiries collection:
+    // Anyone can submit a consultation / support enquiry with name, phone, message.
+    // Read, update (change status), delete restricted to admins to protect customer phone numbers.
+    match /enquiries/{enquiryId} {
+      allow create: if incoming().customerName is string &&
+                       incoming().customerName.size() > 0 && incoming().customerName.size() <= 150 &&
+                       incoming().customerPhone is string &&
+                       incoming().customerPhone.size() >= 7 && incoming().customerPhone.size() <= 25 &&
+                       incoming().message is string &&
+                       incoming().message.size() > 0 && incoming().message.size() <= 3000;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Admins collection: managed by admins
+    match /admins/{adminUid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

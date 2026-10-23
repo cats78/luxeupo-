@@ -1,0 +1,157 @@
+{
+  "entities": {
+    "product": {
+      "title": "Product",
+      "description": "Furniture and home interior product catalog item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique product ID" },
+        "name": { "type": "string", "description": "Product title", "maxLength": 150 },
+        "category": { "type": "string", "description": "Product category", "maxLength": 80 },
+        "subcategory": { "type": "string", "description": "Subcategory name", "maxLength": 80 },
+        "description": { "type": "string", "description": "Detailed description", "maxLength": 3000 },
+        "price": { "type": "number", "description": "Selling price in INR" },
+        "originalPrice": { "type": "number", "description": "Original MRP price" },
+        "discountPercent": { "type": "number", "description": "Discount percentage" },
+        "images": { "type": "array", "description": "Image URLs array" },
+        "materials": { "type": "array", "description": "Available materials" },
+        "colors": { "type": "array", "description": "Available color choices" },
+        "sizes": { "type": "array", "description": "Available dimension options" },
+        "stock": { "type": "number", "description": "Stock count" },
+        "isFeatured": { "type": "boolean", "description": "Featured on homepage" },
+        "inStock": { "type": "boolean", "description": "Availability status" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Update timestamp" }
+      },
+      "required": ["name", "category", "price"]
+    },
+    "category": {
+      "title": "Category",
+      "description": "Catalog category for furniture and home interiors",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Category ID" },
+        "name": { "type": "string", "description": "Category display name", "maxLength": 80 },
+        "slug": { "type": "string", "description": "Category slug", "maxLength": 80 },
+        "description": { "type": "string", "description": "Short description", "maxLength": 300 },
+        "image": { "type": "string", "description": "Cover image URL" },
+        "subcategories": { "type": "array", "description": "List of subcategory names" },
+        "sortOrder": { "type": "number", "description": "Display order" },
+        "isActive": { "type": "boolean", "description": "Active status" }
+      },
+      "required": ["name", "slug"]
+    },
+    "banner": {
+      "title": "Banner",
+      "description": "Sliding promotional banner for home showcase",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Banner ID" },
+        "title": { "type": "string", "description": "Main banner headline", "maxLength": 150 },
+        "subtitle": { "type": "string", "description": "Subheading or tag", "maxLength": 250 },
+        "imageUrl": { "type": "string", "description": "Banner image URL" },
+        "buttonText": { "type": "string", "description": "CTA button text", "maxLength": 50 },
+        "buttonLink": { "type": "string", "description": "CTA target link", "maxLength": 200 },
+        "badge": { "type": "string", "description": "Tag or badge label", "maxLength": 50 },
+        "sortOrder": { "type": "number", "description": "Display sequence" },
+        "isActive": { "type": "boolean", "description": "Active visibility flag" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["title", "imageUrl"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "Customer purchase order record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "orderNumber": { "type": "string", "description": "Readable order identifier", "maxLength": 50 },
+        "customerName": { "type": "string", "description": "Full name of customer", "maxLength": 100 },
+        "customerPhone": { "type": "string", "description": "Customer contact number", "maxLength": 20 },
+        "customerEmail": { "type": "string", "description": "Customer email", "maxLength": 100 },
+        "shippingAddress": { "type": "string", "description": "Delivery address", "maxLength": 500 },
+        "city": { "type": "string", "description": "City of delivery", "maxLength": 80 },
+        "postalCode": { "type": "string", "description": "Postal pincode", "maxLength": 20 },
+        "notes": { "type": "string", "description": "Special requests", "maxLength": 1000 },
+        "items": { "type": "array", "description": "Ordered line items" },
+        "subtotal": { "type": "number", "description": "Items subtotal" },
+        "deliveryFee": { "type": "number", "description": "Shipping charges" },
+        "total": { "type": "number", "description": "Final total amount" },
+        "status": { "type": "string", "description": "Order lifecycle state", "maxLength": 30 },
+        "paymentStatus": { "type": "string", "description": "Payment verification state", "maxLength": 30 },
+        "paymentMethod": { "type": "string", "description": "Payment type", "maxLength": 50 },
+        "createdAt": { "type": "string", "description": "Order creation date" },
+        "updatedAt": { "type": "string", "description": "Order updated date" }
+      },
+      "required": ["customerName", "customerPhone", "shippingAddress", "items", "total"]
+    },
+    "enquiry": {
+      "title": "Enquiry",
+      "description": "Customer consultation and support enquiry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Enquiry ID" },
+        "customerName": { "type": "string", "description": "Customer name", "maxLength": 100 },
+        "customerPhone": { "type": "string", "description": "Customer phone", "maxLength": 20 },
+        "customerEmail": { "type": "string", "description": "Customer email", "maxLength": 100 },
+        "subject": { "type": "string", "description": "Enquiry subject / department", "maxLength": 150 },
+        "message": { "type": "string", "description": "Enquiry description", "maxLength": 2000 },
+        "status": { "type": "string", "description": "Status: new, in_progress, resolved", "maxLength": 30 },
+        "createdAt": { "type": "string", "description": "Timestamp" }
+      },
+      "required": ["customerName", "customerPhone", "message"]
+    },
+    "setting": {
+      "title": "Setting",
+      "description": "Storefront configuration settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Setting ID" },
+        "logoUrl": { "type": "string", "description": "Official logo image URL" },
+        "phone": { "type": "string", "description": "Customer care phone", "maxLength": 30 },
+        "email": { "type": "string", "description": "Customer support email", "maxLength": 100 },
+        "announcement": { "type": "string", "description": "Top announcement banner text", "maxLength": 300 },
+        "freeShippingMin": { "type": "number", "description": "Minimum order value for free delivery" },
+        "address": { "type": "string", "description": "Showroom address / tagline", "maxLength": 300 },
+        "updatedAt": { "type": "string", "description": "Last updated" }
+      }
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/product" },
+      "description": "Public catalog of luxury furniture pieces"
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/category" },
+      "description": "Furniture categories and subcategories"
+    },
+    "/banners/{bannerId}": {
+      "schema": { "$ref": "#/entities/banner" },
+      "description": "Homepage sliding hero banners"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/order" },
+      "description": "Customer orders with PII and shipping details"
+    },
+    "/enquiries/{enquiryId}": {
+      "schema": { "$ref": "#/entities/enquiry" },
+      "description": "Customer contact and bespoke consultation requests"
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/setting" },
+      "description": "Storefront global branding and contact settings"
+    },
+    "/admins/{adminUid}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" },
+          "role": { "type": "string" },
+          "createdAt": { "type": "string" }
+        }
+      },
+      "description": "Admin authorization records"
+    }
+  }
+}
