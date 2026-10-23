@@ -110,22 +110,26 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   };
 
   // Image Upload Handler (PNG, JPG, JPEG validation, saves to Firebase Storage, avoids duplicates)
+  const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError('');
+    setUploadSuccessMsg('');
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    setUploadProgress(15);
+    setUploadProgress(10);
 
     try {
       const newUrls: string[] = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        setUploadProgress(Math.round(((i + 1) / files.length) * 90));
 
-        const downloadUrl = await uploadImageToStorage(file, 'products');
+        const downloadUrl = await uploadImageToStorage(file, 'products', (prog) => {
+          const overallProgress = Math.round(((i + prog / 100) / files.length) * 100);
+          setUploadProgress(overallProgress);
+        });
 
         // Avoid duplicate uploads
         if (!images.includes(downloadUrl) && !newUrls.includes(downloadUrl)) {
@@ -140,9 +144,11 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
         }
         return combined;
       });
+      setUploadSuccessMsg(`${files.length} image(s) processed and added successfully.`);
+      setTimeout(() => setUploadSuccessMsg(''), 4000);
     } catch (err: any) {
       console.error('Product image upload error:', err);
-      setUploadError(err.message || 'Error uploading image to storage. Please try again.');
+      setUploadError(err.message || 'Error uploading image. Please try again.');
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -536,8 +542,30 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
               {/* Product Images (PNG/JPG validation, multi-image, preview) */}
               <div className="space-y-3">
                 <label className="block uppercase tracking-wider font-semibold text-[#121214]">
-                  Product Images (PNG, JPG, JPEG accepted &bull; Max 5MB each) *
+                  Product Images (PNG, JPG, JPEG accepted • Max 10MB each) *
                 </label>
+
+                {uploadSuccessMsg && (
+                  <div className="p-2.5 bg-green-50 border border-green-200 text-green-800 text-xs rounded flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>{uploadSuccessMsg}</span>
+                  </div>
+                )}
+
+                {isUploading && (
+                  <div className="p-3 bg-[#FAF8F5] border border-[#B88E52]/30 rounded space-y-1.5">
+                    <div className="flex justify-between text-[11px] font-semibold text-[#121214]">
+                      <span>Processing &amp; Uploading Images...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-[#E8E2D9] h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#B88E52] h-full transition-all duration-200 rounded-full"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
                 
                 {/* File Upload Selector */}
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">

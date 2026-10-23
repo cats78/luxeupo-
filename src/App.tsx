@@ -33,6 +33,7 @@ import { Footer } from './components/Footer';
 
 import { AdminLayout } from './components/AdminPanel/AdminLayout';
 import { AdminLogin } from './components/AdminPanel/AdminLogin';
+import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 
 function MainApp() {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -270,6 +271,7 @@ function MainApp() {
           }}
           onOpenAdmin={navigateToAdmin}
         />
+        <FloatingWhatsApp />
       </div>
     );
   }
@@ -409,6 +411,9 @@ function MainApp() {
         }}
         onOpenAdmin={navigateToAdmin}
       />
+
+      {/* Floating WhatsApp Contact Button (Customer Care: 9704796170) */}
+      <FloatingWhatsApp />
     </div>
   );
 }

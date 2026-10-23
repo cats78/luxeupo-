@@ -103,7 +103,7 @@ export const SupportForm: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[11px] uppercase tracking-wider text-[#78716C] font-semibold block">
-                    Direct Customer Care &amp; WhatsApp
+                    Direct Customer Care & WhatsApp
                   </span>
                   <span className="font-serif text-base sm:text-lg font-bold text-[#1C1917] group-hover:text-[#B88E52] transition-colors">
                     {settings.phone}
@@ -137,7 +137,7 @@ export const SupportForm: React.FC = () => {
                     Concierge Hours
                   </span>
                   <span className="text-xs text-[#1C1917] font-medium">
-                    Monday &ndash; Sunday: 10:00 AM &ndash; 8:00 PM IST
+                    Monday – Sunday: 10:00 AM – 8:00 PM IST
                   </span>
                 </div>
               </div>

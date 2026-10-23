@@ -132,7 +132,7 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D9]">
         <div>
           <h2 className="font-serif-luxury text-2xl font-bold text-[#121214]">
-            Category &amp; Space Management
+            Category & Space Management
           </h2>
           <p className="text-xs text-[#736D64] mt-0.5">
             Organize furniture spaces, subcategory tags, and cover photography.
@@ -281,8 +281,24 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
               {/* Cover Image Upload & URL */}
               <div className="space-y-2">
                 <label className="block font-semibold text-[#121214] uppercase tracking-wider">
-                  Cover Photography (PNG, JPG &bull; Max 8MB) *
+                  Cover Photography (PNG, JPG • Max 10MB) *
                 </label>
+
+                {uploadingImage && (
+                  <div className="p-3 bg-[#FAF8F5] border border-[#B88E52]/30 rounded space-y-1.5">
+                    <div className="flex justify-between text-[11px] font-semibold text-[#121214]">
+                      <span>Processing & Uploading Category Image...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-[#E8E2D9] h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#B88E52] h-full transition-all duration-200 rounded-full"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                   <label className="px-3 py-2 bg-white border border-[#9A7B4F] text-[#9A7B4F] hover:bg-[#9A7B4F] hover:text-white rounded cursor-pointer transition-colors flex items-center gap-1.5 font-bold shrink-0">
                     <Upload className="w-4 h-4" />
@@ -319,7 +335,7 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
               {/* Interactive Subcategory Tag Editor */}
               <div className="space-y-2 pt-1 border-t border-[#F0EBE1]">
                 <label className="block font-semibold text-[#121214] uppercase tracking-wider">
-                  Subcategories &amp; Styles ({subcategories.length})
+                  Subcategories & Styles ({subcategories.length})
                 </label>
                 <p className="text-[11px] text-[#736D64]">
                   Add individual subcategory tags that clients can filter by on catalogue pages.

@@ -63,7 +63,7 @@ export const EnquiriesTab: React.FC<EnquiriesTabProps> = ({ enquiries }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D9]">
         <div>
           <h2 className="font-serif-luxury text-2xl font-bold text-[#121214]">
-            Client Consultation &amp; Support Requests
+            Client Consultation & Support Requests
           </h2>
           <p className="text-xs text-[#736D64] mt-0.5">
             Bespoke design enquiries, private appointment requests, and client contact information.

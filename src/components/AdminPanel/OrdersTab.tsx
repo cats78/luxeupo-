@@ -77,7 +77,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D9]">
         <div>
           <h2 className="font-serif-luxury text-2xl font-bold text-[#121214]">
-            Order Fulfillment &amp; Logistics
+            Order Fulfillment & Logistics
           </h2>
           <p className="text-xs text-[#736D64] mt-0.5">
             Track white-glove dispatches, client verification, and delivery milestones.

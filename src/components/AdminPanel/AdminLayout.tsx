@@ -12,7 +12,9 @@ import {
   ArrowLeft,
   Sparkles,
   ShieldCheck,
-  Check
+  Check,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -61,6 +63,37 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const unreadEnquiriesCount = enquiries.filter(e => e.status === 'New').length;
   const totalNotifications = pendingOrdersCount + unreadEnquiriesCount;
 
+  // Real-time enquiry arrival alert banner
+  const [newEnquiryToast, setNewEnquiryToast] = useState<Enquiry | null>(null);
+  const prevEnquiriesLength = React.useRef(enquiries.length);
+
+  React.useEffect(() => {
+    if (enquiries.length > prevEnquiriesLength.current && prevEnquiriesLength.current > 0) {
+      const latest = enquiries[0];
+      if (latest && latest.status === 'New') {
+        setNewEnquiryToast(latest);
+        // Play subtle luxury notification tone via Web Audio API if supported
+        try {
+          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        } catch {
+          // Audio optional
+        }
+      }
+    }
+    prevEnquiriesLength.current = enquiries.length;
+  }, [enquiries]);
+
   const requestBrowserNotifications = async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
@@ -84,30 +117,107 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'settings', label: 'Storefront Settings', icon: Settings },
   ];
 
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-[#121214] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#121214] flex flex-col md:flex-row overflow-x-hidden">
       
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-[#121214] text-[#E5D5BA] flex flex-col justify-between shrink-0 border-r border-[#C5A880]/20">
+      {/* Mobile Top Header (Visible on screens < md) */}
+      <div className="md:hidden bg-[#121214] text-[#E5D5BA] px-4 py-3 border-b border-[#C5A880]/20 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-2.5">
+          <img
+            src={settings.logoUrl}
+            alt="LUXEUPHO Logo"
+            className="h-10 w-auto object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
+            }}
+          />
+          <div>
+            <span className="font-serif-luxury font-bold tracking-[0.12em] text-white text-xs block leading-tight">
+              LUXEUPHO
+            </span>
+            <span className="text-[8px] uppercase tracking-[0.2em] text-[#C5A880] font-bold">
+              Admin Suite
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="p-2 text-[#E5D5BA] hover:text-white rounded border border-white/10"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Horizontal Quick Tabs (Allows 1-tap navigation without opening menu) */}
+      <div className="md:hidden bg-[#1A1917] border-b border-white/10 px-2 py-1.5 flex items-center gap-1 overflow-x-auto whitespace-nowrap sticky top-[57px] z-30">
+        {navItems.map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id as any);
+                setSelectedOrder(null);
+                setMobileSidebarOpen(false);
+              }}
+              className={`px-3 py-1.5 rounded text-[11px] font-semibold tracking-wider transition-all flex items-center gap-1.5 shrink-0 ${
+                isActive
+                  ? 'bg-[#C5A880] text-[#121214] font-bold'
+                  : 'text-[#C5BEB3] hover:bg-white/5'
+              }`}
+            >
+              <span>{item.label}</span>
+              {item.count !== undefined && item.count > 0 && (
+                <span className={`px-1 py-0.2 rounded text-[9px] font-bold ${isActive ? 'bg-[#121214] text-[#E5D5BA]' : 'bg-[#E07A5F] text-white'}`}>
+                  {item.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Sidebar (Desktop permanent, Mobile overlay drawer) */}
+      <aside
+        className={`${
+          mobileSidebarOpen ? 'fixed inset-0 z-50 flex flex-col' : 'hidden md:flex flex-col'
+        } w-full md:w-64 bg-[#121214] text-[#E5D5BA] justify-between shrink-0 border-r border-[#C5A880]/20 min-h-screen md:min-h-0`}
+      >
         <div>
           {/* Brand Emblem & Header */}
-          <div className="p-6 border-b border-white/10 flex items-center gap-3">
-            <img
-              src={settings.logoUrl}
-              alt="LUXEUPHO Logo"
-              className="h-10 w-auto object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
-              }}
-            />
-            <div>
-              <span className="font-serif-luxury font-bold tracking-[0.15em] text-white text-base block">
-                LUXEUPHO
-              </span>
-              <span className="text-[9px] uppercase tracking-[0.25em] text-[#C5A880] font-bold">
-                Admin Suite
-              </span>
+          <div className="p-5 border-b border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src={settings.logoUrl}
+                alt="LUXEUPHO Logo"
+                className="h-14 w-auto object-contain shrink-0"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
+                }}
+              />
+              <div>
+                <span className="font-serif-luxury font-bold tracking-[0.15em] text-white text-base block leading-tight">
+                  LUXEUPHO
+                </span>
+                <span className="text-[9px] uppercase tracking-[0.25em] text-[#C5A880] font-bold">
+                  Admin Suite
+                </span>
+              </div>
             </div>
+
+            {/* Close button for mobile drawer */}
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              className="md:hidden p-1.5 text-white/70 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Navigation Items */}
@@ -121,6 +231,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   onClick={() => {
                     setActiveTab(item.id as any);
                     setSelectedOrder(null);
+                    setMobileSidebarOpen(false);
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-3 rounded-sm text-xs font-semibold tracking-wider transition-all ${
                     isActive
@@ -255,6 +366,35 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </button>
           </div>
         </header>
+
+        {/* Real-time New Enquiry Alert Banner */}
+        {newEnquiryToast && (
+          <div className="bg-[#B88E52] text-white px-6 py-3.5 flex items-center justify-between shadow-lg animate-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-3 text-xs">
+              <span className="p-1.5 bg-black/20 rounded-full font-bold">🔔 New Enquiry</span>
+              <span>
+                <strong>{newEnquiryToast.customerName}</strong> ({newEnquiryToast.customerPhone}) submitted: &ldquo;{newEnquiryToast.subject}&rdquo;
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setActiveTab('enquiries');
+                  setNewEnquiryToast(null);
+                }}
+                className="px-3 py-1 bg-white text-[#121214] font-bold text-xs uppercase tracking-wider rounded hover:bg-[#FAF9F6] transition-colors"
+              >
+                View Enquiries
+              </button>
+              <button
+                onClick={() => setNewEnquiryToast(null)}
+                className="text-white/80 hover:text-white text-xs px-1"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tab Content Body */}
         <div className="p-6 sm:p-8 max-w-7xl w-full mx-auto">

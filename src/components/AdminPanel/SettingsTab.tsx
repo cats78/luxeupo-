@@ -81,7 +81,7 @@ export const SettingsTab: React.FC = () => {
     <div className="space-y-6 max-w-4xl pb-12">
       <div className="pb-4 border-b border-[#E8E2D9]">
         <h2 className="font-serif-luxury text-2xl font-bold text-[#121214]">
-          Storefront Branding, Contact &amp; Payment Configurations
+          Storefront Branding, Contact & Payment Configurations
         </h2>
         <p className="text-xs text-[#736D64] mt-0.5">
           Update the official logo, concierge phone number, support email, and pre-configure future payment gateway details.

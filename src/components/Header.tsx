@@ -46,28 +46,28 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E7E5E4] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-20 sm:h-24">
           
           {/* Left: Brand Logo (Official Emblem Link + LUXEUPHO) */}
           <div className="flex items-center">
             <button
               onClick={() => onNavigateTab('home')}
-              className="flex items-center gap-3 group focus:outline-none text-left"
+              className="flex items-center gap-3 sm:gap-4 group focus:outline-none text-left py-1"
             >
               <img
                 src={settings.logoUrl || 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png'}
                 alt="Luxeupho-Gold-Home-Interiors-Emblem"
-                className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                className="h-12 sm:h-16 md:h-20 max-w-[180px] sm:max-w-[240px] w-auto object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
                 }}
               />
               <div className="flex flex-col">
-                <span className="font-serif text-xl sm:text-2xl font-bold tracking-[0.16em] text-[#1C1917] group-hover:text-[#B88E52] transition-colors leading-none">
+                <span className="font-serif text-2xl sm:text-3xl font-bold tracking-[0.16em] text-[#1C1917] group-hover:text-[#B88E52] transition-colors leading-none">
                   LUXEUPHO
                 </span>
-                <span className="text-[9px] tracking-[0.25em] uppercase text-[#B88E52] font-semibold mt-0.5 hidden sm:block">
-                  Home Interiors
+                <span className="text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-[#B88E52] font-bold mt-1 hidden sm:block">
+                  Furniture & Home Interiors
                 </span>
               </div>
             </button>

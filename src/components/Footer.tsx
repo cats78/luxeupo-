@@ -25,12 +25,12 @@ export const Footer: React.FC<FooterProps> = ({ categories, onSelectCategory, on
           
           {/* Brand Info (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3.5">
               <a href="https://ibb.co/WvkVYqXh" target="_blank" rel="noopener noreferrer" className="shrink-0">
                 <img
                   src={settings.logoUrl || 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png'}
                   alt="Luxeupho-Gold-Home-Interiors-Emblem"
-                  className="h-14 sm:h-16 w-auto object-contain"
+                  className="h-16 sm:h-20 w-auto object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
                   }}
@@ -41,7 +41,7 @@ export const Footer: React.FC<FooterProps> = ({ categories, onSelectCategory, on
                   LUXEUPHO
                 </span>
                 <span className="text-[10px] tracking-[0.25em] uppercase text-[#B88E52] font-bold">
-                  Furniture &amp; Home Interiors
+                  Furniture & Home Interiors
                 </span>
               </div>
             </div>
@@ -87,7 +87,7 @@ export const Footer: React.FC<FooterProps> = ({ categories, onSelectCategory, on
                 </li>
               ))}
               <li>
-                <span className="text-[#8C867D]">Custom Sizing &amp; Fabrics</span>
+                <span className="text-[#8C867D]">Custom Sizing & Fabrics</span>
               </li>
             </ul>
           </div>
@@ -105,7 +105,7 @@ export const Footer: React.FC<FooterProps> = ({ categories, onSelectCategory, on
                 <span className="text-[#1C1917] font-medium">5-Year Structural Warranty</span>
               </li>
               <li>
-                <span className="text-[#1C1917] font-medium">PhonePe &amp; UPI Integration</span>
+                <span className="text-[#1C1917] font-medium">PhonePe & UPI Integration</span>
               </li>
               <li>
                 <span className="text-[#1C1917] font-medium">7 Days Easy Support Policy</span>

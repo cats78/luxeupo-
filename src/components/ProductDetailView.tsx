@@ -279,7 +279,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   Secure Payment
                 </h4>
                 <p className="text-xs text-[#78716C]">
-                  PhonePe &amp; UPI Only
+                  PhonePe & UPI Only
                 </p>
               </div>
             </div>

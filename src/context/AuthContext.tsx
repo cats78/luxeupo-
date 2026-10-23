@@ -5,7 +5,8 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  signInAnonymously
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
@@ -139,6 +140,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('luxeupho_admin_user', JSON.stringify(data.user));
         setIsAdmin(true);
         setAdminUser(data.user);
+        try {
+          if (!auth.currentUser) {
+            await signInAnonymously(auth);
+          }
+        } catch (e) {
+          console.warn('Firebase auth anonymous session note:', e);
+        }
         return { success: true };
       }
 
