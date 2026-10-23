@@ -126,11 +126,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       <div className="md:hidden bg-[#121214] text-[#E5D5BA] px-4 py-3 border-b border-[#C5A880]/20 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-2.5">
           <img
-            src={settings.logoUrl}
+            src={settings.logoUrl || 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png'}
             alt="LUXEUPHO Logo"
             className="h-10 w-auto object-contain"
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
+              (e.target as HTMLImageElement).src = 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
             }}
           />
           <div>
@@ -194,11 +195,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           <div className="p-5 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src={settings.logoUrl}
+                src={settings.logoUrl || 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png'}
                 alt="LUXEUPHO Logo"
                 className="h-14 w-auto object-contain shrink-0"
+                style={{ imageRendering: '-webkit-optimize-contrast' }}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
+                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
                 }}
               />
               <div>

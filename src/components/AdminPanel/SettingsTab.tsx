@@ -112,11 +112,12 @@ export const SettingsTab: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             <div className="p-3 border border-[#E8E2D9] bg-[#121214] rounded-sm shrink-0">
               <img
-                src={logoUrl || 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png'}
+                src={logoUrl || 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png'}
                 alt="Logo Preview"
                 className="h-20 w-auto object-contain"
+                style={{ imageRendering: '-webkit-optimize-contrast' }}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
+                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
                 }}
               />
             </div>
@@ -133,7 +134,7 @@ export const SettingsTab: React.FC = () => {
                 className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none"
               />
               <span className="text-[11px] text-[#8C867D] block">
-                Official emblem pre-configured: <code>https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png</code>
+                Official emblem pre-configured: <code>https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png</code>
               </span>
             </div>
           </div>

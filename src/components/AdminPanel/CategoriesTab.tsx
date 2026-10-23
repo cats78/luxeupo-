@@ -118,12 +118,10 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      try {
-        await deleteCategory(id);
-      } catch (err) {
-        console.error('Delete category error:', err);
-      }
+    try {
+      await deleteCategory(id);
+    } catch (err) {
+      console.error('Delete category error:', err);
     }
   };
 

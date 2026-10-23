@@ -1,7 +1,7 @@
 import { Product, Category, Banner, StoreSettings } from '../types';
 
 export const INITIAL_SETTINGS: StoreSettings = {
-  logoUrl: 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png',
+  logoUrl: 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png',
   phone: '9704796170',
   email: 'luxeuphohomeinteriors@gmail.com',
   announcement: 'COMPLIMENTARY ARCHITECTURAL DESIGN CONSULTATION & WHITE-GLOVE PAN-INDIA INSTALLATION',

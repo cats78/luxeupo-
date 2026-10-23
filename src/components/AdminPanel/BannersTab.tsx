@@ -107,12 +107,10 @@ export const BannersTab: React.FC<BannersTabProps> = ({ banners }) => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Delete this showcase banner?')) {
-      try {
-        await deleteBanner(id);
-      } catch (err) {
-        console.error('Delete banner error:', err);
-      }
+    try {
+      await deleteBanner(id);
+    } catch (err) {
+      console.error('Delete banner error:', err);
     }
   };
 

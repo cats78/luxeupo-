@@ -12,6 +12,7 @@ import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { CartProvider, useCart } from './context/CartContext';
 
 import { Product, Category, Banner, Order, Enquiry } from './types';
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_BANNERS } from './data/initialData';
 import {
   subscribeProducts,
   subscribeCategories,
@@ -40,10 +41,10 @@ function MainApp() {
   const { settings } = useSettings();
   const { addToCart, isPaymentNoticeOpen, setIsPaymentNoticeOpen } = useCart();
 
-  // Firestore real-time state
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [banners, setBanners] = useState<Banner[]>([]);
+  // Firestore real-time state with instant baseline initialization
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
+  const [banners, setBanners] = useState<Banner[]>(INITIAL_BANNERS);
   const [orders, setOrders] = useState<Order[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
 
@@ -75,29 +76,34 @@ function MainApp() {
     });
   };
 
-  // URL Parsing
+  // URL Parsing - Admin strictly accessible only via direct URL (/admin or #admin)
   const parseCurrentUrl = () => {
     const path = window.location.pathname;
+    const hash = window.location.hash;
     const searchParams = new URLSearchParams(window.location.search);
 
-    if (path.includes('/admin') || searchParams.get('route') === 'admin' || searchParams.get('admin') === 'true') {
+    const isAdminRoute =
+      path === '/admin' ||
+      path.startsWith('/admin/') ||
+      hash === '#admin' ||
+      hash === '#/admin' ||
+      searchParams.get('route') === 'admin' ||
+      searchParams.get('admin') === 'true';
+
+    if (isAdminRoute) {
       setCurrentRoute('admin');
       setActiveProductId(null);
       return;
     }
 
     const productMatch = path.match(/\/product\/([a-zA-Z0-9_-]+)/);
+    const hashProductMatch = hash.match(/#\/?product\/([a-zA-Z0-9_-]+)/);
     const productParam = searchParams.get('product') || searchParams.get('id');
 
-    if (productMatch && productMatch[1]) {
+    const matchedId = productMatch?.[1] || hashProductMatch?.[1] || productParam;
+    if (matchedId) {
       setCurrentRoute('product');
-      setActiveProductId(productMatch[1]);
-      return;
-    }
-
-    if (productParam) {
-      setCurrentRoute('product');
-      setActiveProductId(productParam);
+      setActiveProductId(matchedId);
       return;
     }
 
@@ -108,7 +114,11 @@ function MainApp() {
   useEffect(() => {
     parseCurrentUrl();
     window.addEventListener('popstate', parseCurrentUrl);
-    return () => window.removeEventListener('popstate', parseCurrentUrl);
+    window.addEventListener('hashchange', parseCurrentUrl);
+    return () => {
+      window.removeEventListener('popstate', parseCurrentUrl);
+      window.removeEventListener('hashchange', parseCurrentUrl);
+    };
   }, []);
 
   // Listen to Firestore Realtime Data
@@ -209,7 +219,6 @@ function MainApp() {
             products={products}
             wishlistCount={wishlist.length}
             onOpenWishlist={() => handleTabChange('furniture')}
-            onOpenAdmin={navigateToAdmin}
           />
           <div className="max-w-7xl mx-auto px-4 py-24 text-center">
             <h2 className="font-serif text-2xl font-bold text-[#1C1917] mb-2">
@@ -231,7 +240,6 @@ function MainApp() {
               setSelectedCategory(cat);
               handleTabChange('furniture');
             }}
-            onOpenAdmin={navigateToAdmin}
           />
         </div>
       );
@@ -245,7 +253,6 @@ function MainApp() {
           products={products}
           wishlistCount={wishlist.length}
           onOpenWishlist={() => handleTabChange('furniture')}
-          onOpenAdmin={navigateToAdmin}
         />
         
         <main className="flex-1">
@@ -269,7 +276,6 @@ function MainApp() {
             setSelectedCategory(cat);
             handleTabChange('furniture');
           }}
-          onOpenAdmin={navigateToAdmin}
         />
         <FloatingWhatsApp />
       </div>
@@ -286,7 +292,6 @@ function MainApp() {
         products={products}
         wishlistCount={wishlist.length}
         onOpenWishlist={() => handleTabChange('furniture')}
-        onOpenAdmin={navigateToAdmin}
       />
 
       <main className="flex-1">
@@ -409,7 +414,6 @@ function MainApp() {
           setSelectedCategory(catName);
           setCurrentTab('furniture');
         }}
-        onOpenAdmin={navigateToAdmin}
       />
 
       {/* Floating WhatsApp Contact Button (Customer Care: 9704796170) */}

@@ -5,7 +5,6 @@ import {
   ShoppingBag,
   Menu,
   X,
-  Lock,
   ChevronRight
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
@@ -18,7 +17,6 @@ interface HeaderProps {
   products: Product[];
   wishlistCount: number;
   onOpenWishlist: () => void;
-  onOpenAdmin?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -27,7 +25,6 @@ export const Header: React.FC<HeaderProps> = ({
   products,
   wishlistCount,
   onOpenWishlist,
-  onOpenAdmin,
 }) => {
   const { settings } = useSettings();
   const { totalCount, setIsCartOpen } = useCart();
@@ -55,11 +52,12 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-3 sm:gap-4 group focus:outline-none text-left py-1"
             >
               <img
-                src={settings.logoUrl || 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png'}
+                src={settings.logoUrl || 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png'}
                 alt="Luxeupho-Gold-Home-Interiors-Emblem"
-                className="h-12 sm:h-16 md:h-20 max-w-[180px] sm:max-w-[240px] w-auto object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
+                className="h-14 sm:h-16 md:h-20 max-w-[200px] sm:max-w-[260px] w-auto object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
+                style={{ imageRendering: '-webkit-optimize-contrast' }}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
+                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
                 }}
               />
               <div className="flex flex-col">
@@ -274,20 +272,10 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="pt-4 border-t border-[#E7E5E4] flex flex-col gap-3">
             <a
               href={`tel:${settings.phone}`}
-              className="py-3 bg-[#B88E52] text-white rounded-md text-center text-xs font-bold uppercase tracking-wider"
+              className="py-3 bg-[#B88E52] text-white rounded-md text-center text-xs font-bold uppercase tracking-wider shadow-sm"
             >
               Customer Care: {settings.phone}
             </a>
-            <button
-              onClick={() => {
-                if (onOpenAdmin) onOpenAdmin();
-                setMobileMenuOpen(false);
-              }}
-              className="py-2.5 border border-[#1C1917] text-[#1C1917] rounded-md text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Admin Portal</span>
-            </button>
           </div>
         </div>
       )}

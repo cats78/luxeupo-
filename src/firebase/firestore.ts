@@ -70,9 +70,15 @@ export async function fetchProducts(): Promise<Product[]> {
   try {
     const snap = await getDocs(collection(db, path));
     if (snap.empty) {
+      seedInitialDatabaseIfEmpty().catch(console.error);
       return INITIAL_PRODUCTS;
     }
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
+    const prods = snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
+    return prods.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
   } catch (err) {
     console.warn('Fetch products returned error, using seed fallback', err);
     return INITIAL_PRODUCTS;
@@ -88,9 +94,15 @@ export function subscribeProducts(
     collection(db, path),
     (snapshot) => {
       if (snapshot.empty) {
+        seedInitialDatabaseIfEmpty().catch(console.error);
         onSuccess(INITIAL_PRODUCTS);
       } else {
         const prods = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Product));
+        prods.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
         onSuccess(prods);
       }
     },
@@ -165,6 +177,7 @@ export function subscribeCategories(
     collection(db, path),
     (snapshot) => {
       if (snapshot.empty) {
+        seedInitialDatabaseIfEmpty().catch(console.error);
         onSuccess(INITIAL_CATEGORIES);
       } else {
         const cats = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Category));
@@ -209,6 +222,7 @@ export function subscribeBanners(
     collection(db, path),
     (snapshot) => {
       if (snapshot.empty) {
+        seedInitialDatabaseIfEmpty().catch(console.error);
         onSuccess(INITIAL_BANNERS);
       } else {
         const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Banner));
@@ -385,38 +399,37 @@ export async function updateStoreSettings(settings: StoreSettings): Promise<void
 // ---------------- DATABASE SEEDING ---------------- //
 
 export async function seedInitialDatabaseIfEmpty(): Promise<void> {
-  // Only attempt writes if authenticated as admin to avoid permission-denied errors
-  if (!auth.currentUser) {
-    return;
-  }
   try {
+    // 1. Products: verify and ensure baseline products exist
     const productsSnap = await getDocs(collection(db, 'products'));
     if (productsSnap.empty) {
       for (const p of INITIAL_PRODUCTS) {
-        await setDoc(doc(db, 'products', p.id), p);
+        await setDoc(doc(db, 'products', p.id), p, { merge: true });
       }
     }
 
+    // 2. Categories: verify and ensure baseline categories exist
     const categoriesSnap = await getDocs(collection(db, 'categories'));
     if (categoriesSnap.empty) {
       for (const c of INITIAL_CATEGORIES) {
-        await setDoc(doc(db, 'categories', c.id), c);
+        await setDoc(doc(db, 'categories', c.id), c, { merge: true });
       }
     }
 
+    // 3. Banners: verify and ensure baseline banners exist
     const bannersSnap = await getDocs(collection(db, 'banners'));
     if (bannersSnap.empty) {
       for (const b of INITIAL_BANNERS) {
-        await setDoc(doc(db, 'banners', b.id), b);
+        await setDoc(doc(db, 'banners', b.id), b, { merge: true });
       }
     }
 
+    // 4. Settings: ensure store_config exists
     const settingsDoc = await getDoc(doc(db, 'settings', 'store_config'));
     if (!settingsDoc.exists()) {
-      await setDoc(doc(db, 'settings', 'store_config'), INITIAL_SETTINGS);
+      await setDoc(doc(db, 'settings', 'store_config'), INITIAL_SETTINGS, { merge: true });
     }
   } catch (err) {
-    // Non-fatal, suppress safely
-    console.debug('Database seed check complete.');
+    console.debug('Database seed check complete.', err);
   }
 }

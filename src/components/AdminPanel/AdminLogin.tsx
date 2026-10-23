@@ -61,11 +61,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
         {/* Brand Emblem */}
         <div className="text-center mb-8">
           <img
-            src={settings.logoUrl}
+            src={settings.logoUrl || 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png'}
             alt="LUXEUPHO Emblem"
             className="h-16 w-auto object-contain mx-auto mb-3"
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://i.ibb.co/7tnk68Df/Luxeupho-Gold-Home-Interiors-Emblem.png';
+              (e.target as HTMLImageElement).src = 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
             }}
           />
           <h1 className="font-serif text-2xl font-bold tracking-[0.14em] text-[#1C1917]">

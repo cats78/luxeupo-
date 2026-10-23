@@ -35,15 +35,13 @@ export const EnquiriesTab: React.FC<EnquiriesTabProps> = ({ enquiries }) => {
   };
 
   const handleDelete = async (enquiryId: string) => {
-    if (confirm('Delete this client enquiry record?')) {
-      try {
-        await deleteEnquiry(enquiryId);
-        if (selectedEnquiry && selectedEnquiry.id === enquiryId) {
-          setSelectedEnquiry(null);
-        }
-      } catch (err) {
-        console.error('Delete enquiry error:', err);
+    try {
+      await deleteEnquiry(enquiryId);
+      if (selectedEnquiry && selectedEnquiry.id === enquiryId) {
+        setSelectedEnquiry(null);
       }
+    } catch (err) {
+      console.error('Delete enquiry error:', err);
     }
   };
 
