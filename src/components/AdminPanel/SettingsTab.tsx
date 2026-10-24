@@ -14,13 +14,17 @@ export const SettingsTab: React.FC = () => {
   const [address, setAddress] = useState(settings.address || '');
 
   // Payment Gateway & Banking Details (Saved for Future Activation)
-  const [paymentGatewayProvider, setPaymentGatewayProvider] = useState(settings.paymentGatewayProvider || 'PhonePe');
+  const [paymentGatewayProvider, setPaymentGatewayProvider] = useState(settings.paymentGatewayProvider || 'Razorpay');
   const [upiId, setUpiId] = useState(settings.upiId || '9704796170@upi');
   const [merchantName, setMerchantName] = useState(settings.merchantName || 'LUXEUPHO FURNITURE & HOME INTERIORS');
   const [bankName, setBankName] = useState(settings.bankName || 'HDFC Bank');
   const [accountNumber, setAccountNumber] = useState(settings.accountNumber || '');
   const [ifscCode, setIfscCode] = useState(settings.ifscCode || '');
   const [gatewayKeyId, setGatewayKeyId] = useState(settings.gatewayKeyId || '');
+  const [razorpayKeyId, setRazorpayKeyId] = useState(settings.razorpayKeyId || '');
+  const [razorpayKeySecret, setRazorpayKeySecret] = useState(settings.razorpayKeySecret || '');
+  const [razorpayWebhookSecret, setRazorpayWebhookSecret] = useState(settings.razorpayWebhookSecret || '');
+  const [paymentsEnabled, setPaymentsEnabled] = useState(Boolean(settings.paymentsEnabled));
 
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -47,7 +51,10 @@ export const SettingsTab: React.FC = () => {
         accountNumber: accountNumber.trim(),
         ifscCode: ifscCode.trim(),
         gatewayKeyId: gatewayKeyId.trim(),
-        paymentsEnabled: false, // Explicitly keep disabled on storefront per user prompt
+        razorpayKeyId: razorpayKeyId.trim(),
+        razorpayKeySecret: razorpayKeySecret.trim(),
+        razorpayWebhookSecret: razorpayWebhookSecret.trim(),
+        paymentsEnabled: Boolean(paymentsEnabled),
       };
 
       await updateSettings(newSettings);
@@ -230,18 +237,51 @@ export const SettingsTab: React.FC = () => {
               4. Payment Gateway &amp; Banking Details (Saved for Future Activation)
             </h3>
             <span className="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-200 rounded text-[10px] font-bold uppercase tracking-wider">
-              Payments Currently Inactive
+              {paymentsEnabled ? 'Online Payments Active' : 'Payments Currently Inactive'}
             </span>
           </div>
 
-          <div className="p-3 bg-[#FAF8F5] border border-[#E8DFC9] rounded text-xs space-y-1">
-            <div className="font-bold text-[#1C1917] flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#B88E52]" />
-              <span>Future Activation Setting</span>
+          <div className="p-4 bg-[#FAF8F5] border border-[#E8DFC9] rounded text-xs space-y-3">
+            <div className="font-bold text-[#1C1917] flex items-center gap-1.5 text-sm">
+              <Sparkles className="w-4 h-4 text-[#B88E52]" />
+              <span>Razorpay Payment Gateway Integration</span>
             </div>
             <p className="text-[#78716C] leading-relaxed">
-              Store your official UPI ID, merchant account, and banking details here. They will remain securely saved in Firestore so you can activate instant checkout as soon as payment onboarding is complete. Storefront checkouts currently display the launch notice: <em>“We’re creating a smooth shopping experience for you. Online ordering and payments will be available soon. No cash on delivery and no online payments for now.”</em>
+              Connect your official Razorpay account to accept UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, and EMIs. Configure your API keys below from the Razorpay Merchant Dashboard.
             </p>
+
+            {/* Checklist of what details to get */}
+            <div className="bg-white p-3.5 border border-[#E8E2D9] rounded-sm space-y-2 text-[#44403C]">
+              <span className="font-bold text-[#121214] block uppercase tracking-wider text-[11px]">
+                What details to get from your Razorpay Dashboard (dashboard.razorpay.com):
+              </span>
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-[#57534E]">
+                <li><strong className="text-[#121214]">Key ID</strong>: Starts with <code className="bg-[#F5F2EB] px-1 py-0.5 rounded text-[#9A7B4F]">rzp_test_...</code> (for testing) or <code className="bg-[#F5F2EB] px-1 py-0.5 rounded text-[#9A7B4F]">rzp_live_...</code> (for real transactions).</li>
+                <li><strong className="text-[#121214]">Key Secret</strong>: Generated once alongside the Key ID under <em>Settings &gt; API Keys &gt; Generate Key</em>.</li>
+                <li><strong className="text-[#121214]">Merchant Business Name</strong>: The registered brand name (e.g., <em>LUXEUPHO Furniture &amp; Home Interiors</em>) shown on client receipts.</li>
+                <li><strong className="text-[#121214]">Settlement Bank Account &amp; IFSC</strong>: The official account where Razorpay deposits customer payments.</li>
+                <li><strong className="text-[#121214]">Business KYC</strong>: Business PAN, GSTIN (optional/if registered), and identity proof verified on Razorpay.</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Payments Enabled Toggle */}
+          <div className="flex items-center justify-between p-3.5 bg-[#FAF9F6] border border-[#E8E2D9] rounded-sm">
+            <div>
+              <span className="font-bold text-[#121214] block">Enable Live Razorpay Checkout</span>
+              <span className="text-[11px] text-[#78716C]">
+                When enabled, customers can pay directly online with UPI &amp; Cards. When off, the concierge booking notice is displayed.
+              </span>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={paymentsEnabled}
+                onChange={(e) => setPaymentsEnabled(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[#D6D3D1] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#D6D3D1] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#9A7B4F]"></div>
+            </label>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -254,9 +294,8 @@ export const SettingsTab: React.FC = () => {
                 onChange={(e) => setPaymentGatewayProvider(e.target.value)}
                 className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none bg-white"
               >
+                <option value="Razorpay">Razorpay (UPI, Cards, NetBanking, EMI)</option>
                 <option value="PhonePe">PhonePe Business PG</option>
-                <option value="Razorpay">Razorpay UPI &amp; Cards</option>
-                <option value="Paytm">Paytm for Business</option>
                 <option value="DirectUPI">Direct Showroom UPI QR</option>
               </select>
             </div>
@@ -270,8 +309,36 @@ export const SettingsTab: React.FC = () => {
                 value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
                 placeholder="9704796170@upi"
-                className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none"
+                className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none font-mono"
               />
+            </div>
+
+            <div>
+              <label className="block text-[#5C564D] font-medium mb-1">
+                Razorpay Key ID
+              </label>
+              <input
+                type="text"
+                value={razorpayKeyId}
+                onChange={(e) => setRazorpayKeyId(e.target.value)}
+                placeholder="rzp_test_... or rzp_live_..."
+                className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none font-mono"
+              />
+              <span className="text-[10px] text-[#78716C] mt-1 block">From Razorpay Dashboard &gt; Settings &gt; API Keys</span>
+            </div>
+
+            <div>
+              <label className="block text-[#5C564D] font-medium mb-1">
+                Razorpay Key Secret
+              </label>
+              <input
+                type="password"
+                value={razorpayKeySecret}
+                onChange={(e) => setRazorpayKeySecret(e.target.value)}
+                placeholder="••••••••••••••••"
+                className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none font-mono"
+              />
+              <span className="text-[10px] text-[#78716C] mt-1 block">Stored securely in Firestore database</span>
             </div>
 
             <div>
@@ -289,7 +356,7 @@ export const SettingsTab: React.FC = () => {
 
             <div>
               <label className="block text-[#5C564D] font-medium mb-1">
-                Bank Name
+                Settlement Bank Name
               </label>
               <input
                 type="text"
@@ -302,7 +369,7 @@ export const SettingsTab: React.FC = () => {
 
             <div>
               <label className="block text-[#5C564D] font-medium mb-1">
-                Bank Account Number
+                Settlement Bank Account Number
               </label>
               <input
                 type="text"
@@ -315,7 +382,7 @@ export const SettingsTab: React.FC = () => {
 
             <div>
               <label className="block text-[#5C564D] font-medium mb-1">
-                IFSC Code
+                Bank IFSC Code
               </label>
               <input
                 type="text"
@@ -323,19 +390,6 @@ export const SettingsTab: React.FC = () => {
                 onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
                 placeholder="e.g. HDFC0001234"
                 className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none font-mono uppercase"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-[#5C564D] font-medium mb-1">
-                Gateway Key ID / Merchant ID (Stored securely for activation)
-              </label>
-              <input
-                type="password"
-                value={gatewayKeyId}
-                onChange={(e) => setGatewayKeyId(e.target.value)}
-                placeholder="MID_LIVE_..."
-                className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none font-mono"
               />
             </div>
           </div>

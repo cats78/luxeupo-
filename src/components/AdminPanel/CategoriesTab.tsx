@@ -24,6 +24,7 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successToast, setSuccessToast] = useState('');
   const [saving, setSaving] = useState(false);
 
   const openAdd = () => {
@@ -108,7 +109,10 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
       };
 
       await saveCategory(payload);
+      setEditingCategory(null);
       setModalOpen(false);
+      setSuccessToast(`Category "${payload.name}" saved and synced live to Firestore!`);
+      setTimeout(() => setSuccessToast(''), 4500);
     } catch (err: any) {
       console.error('Save category error:', err);
       setErrorMessage(err?.message || 'Failed to save category. Please check database permissions.');
@@ -120,8 +124,11 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
   const handleDelete = async (id: string) => {
     try {
       await deleteCategory(id);
-    } catch (err) {
+      setSuccessToast('Category deleted from database.');
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err: any) {
       console.error('Delete category error:', err);
+      setErrorMessage(err?.message || 'Failed to delete category.');
     }
   };
 
@@ -145,6 +152,13 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
           <span>Add Category</span>
         </button>
       </div>
+
+      {successToast && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs rounded-sm flex items-center gap-2.5 animate-fadeIn">
+          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="font-medium">{successToast}</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {categories.map((cat) => (

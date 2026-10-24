@@ -10,7 +10,7 @@ export interface UploadProgressCallback {
  * compressing to high-quality JPEG/WebP) to guarantee fast uploads, crisp visuals,
  * and zero hanging across any device.
  */
-async function compressImage(file: File, maxDimension = 1600, quality = 0.85): Promise<string> {
+async function compressImage(file: File, maxDimension = 1000, quality = 0.72): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {

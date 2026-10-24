@@ -116,5 +116,8 @@ export interface StoreSettings {
   ifscCode?: string;
   bankName?: string;
   gatewayKeyId?: string;
+  razorpayKeyId?: string;
+  razorpayKeySecret?: string;
+  razorpayWebhookSecret?: string;
   paymentsEnabled?: boolean;
 }

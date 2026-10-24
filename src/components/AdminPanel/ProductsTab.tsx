@@ -53,6 +53,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   const [sizesInput, setSizesInput] = useState('');
 
   const [uploadError, setUploadError] = useState('');
+  const [successToast, setSuccessToast] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -199,10 +200,15 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
 
       if (editingProduct) {
         productData.id = editingProduct.id;
+        productData.createdAt = editingProduct.createdAt;
       }
 
       await saveProduct(productData);
+      const savedName = productData.name;
+      setEditingProduct(null);
       setModalOpen(false);
+      setSuccessToast(`Product "${savedName}" saved and synchronized live to Firestore!`);
+      setTimeout(() => setSuccessToast(''), 4500);
       if (onCloseAddModal) onCloseAddModal();
     } catch (err: any) {
       console.error('Failed to save product:', err);
@@ -216,8 +222,11 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     try {
       await deleteProduct(id);
       setDeleteConfirmId(null);
-    } catch (err) {
+      setSuccessToast('Product removed from database.');
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err: any) {
       console.error('Delete product error:', err);
+      setSuccessToast(err?.message || 'Failed to delete product.');
     }
   };
 
@@ -251,6 +260,13 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
           <span>New Furniture Piece</span>
         </button>
       </div>
+
+      {successToast && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs rounded-sm flex items-center gap-2.5 animate-fadeIn">
+          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="font-medium">{successToast}</span>
+        </div>
+      )}
 
       {/* Filters Bar */}
       <div className="flex flex-col sm:flex-row gap-3">

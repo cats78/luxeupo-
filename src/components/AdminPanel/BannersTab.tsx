@@ -24,6 +24,7 @@ export const BannersTab: React.FC<BannersTabProps> = ({ banners }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState('');
+  const [successToast, setSuccessToast] = useState('');
   const [saving, setSaving] = useState(false);
 
   const openAdd = () => {
@@ -97,7 +98,10 @@ export const BannersTab: React.FC<BannersTabProps> = ({ banners }) => {
       };
 
       await saveBanner(payload);
+      setEditingBanner(null);
       setModalOpen(false);
+      setSuccessToast(`Banner slide "${payload.title}" saved and synced live to Firestore!`);
+      setTimeout(() => setSuccessToast(''), 4500);
     } catch (err: any) {
       console.error('Save banner error:', err);
       setUploadError(err?.message || 'Failed to save banner to database.');
@@ -109,8 +113,11 @@ export const BannersTab: React.FC<BannersTabProps> = ({ banners }) => {
   const handleDelete = async (id: string) => {
     try {
       await deleteBanner(id);
-    } catch (err) {
+      setSuccessToast('Banner slide deleted from database.');
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err: any) {
       console.error('Delete banner error:', err);
+      setUploadError(err?.message || 'Failed to delete banner.');
     }
   };
 
@@ -134,6 +141,13 @@ export const BannersTab: React.FC<BannersTabProps> = ({ banners }) => {
           <span>Add New Slide</span>
         </button>
       </div>
+
+      {successToast && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs rounded-sm flex items-center gap-2.5 animate-fadeIn">
+          <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="font-medium">{successToast}</span>
+        </div>
+      )}
 
       <div className="space-y-4">
         {banners.map((b) => (
