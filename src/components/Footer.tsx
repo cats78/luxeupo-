@@ -9,7 +9,7 @@ interface FooterProps {
 }
 
 const LOGO_URL =
-  'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
+  'https://i.ibb.co/fYfHj2J8/Polished-Gold-House-Monogram-Logo.png';
 
 export const Footer: React.FC<FooterProps> = ({
   categories,
@@ -48,7 +48,7 @@ export const Footer: React.FC<FooterProps> = ({
               />
 
               <div>
-                <span className="font-serif text-2xl font-bold tracking-[0.16em] text-[#1C1917] block">
+                <span className="font-serif text-2xl font-bold tracking-[0.16em] text-[#B88E52] block">
                   LUXEUPHO
                 </span>
                 <span className="text-[10px] tracking-[0.25em] uppercase text-[#B88E52] font-bold">

@@ -20,7 +20,7 @@ interface HeaderProps {
 }
 
 const LOGO_URL =
-  'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
+  'https://i.ibb.co/fYfHj2J8/Polished-Gold-House-Monogram-Logo.png';
 
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
@@ -60,7 +60,6 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E7E5E4]">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        {/* Compact Header */}
         <div className="flex items-center justify-between min-h-20 sm:min-h-24 gap-2 sm:gap-3">
 
           {/* Brand Logo */}
@@ -73,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <img
                 src={LOGO_URL}
-                alt="LUXEUPHO Furniture & Home Interiors"
+                alt="LUXEUPHO Gold House Monogram Logo"
                 width={240}
                 height={240}
                 loading="eager"
@@ -88,9 +87,10 @@ export const Header: React.FC<HeaderProps> = ({
               />
 
               <div className="flex flex-col">
-                <span className="font-serif text-lg sm:text-2xl font-bold tracking-[0.08em] sm:tracking-[0.14em] text-[#1C1917] group-hover:text-[#B88E52] transition-colors leading-tight whitespace-nowrap">
+                <span className="font-serif text-lg sm:text-2xl font-bold tracking-[0.08em] sm:tracking-[0.14em] text-[#B88E52] group-hover:text-[#B88E52] transition-colors leading-tight whitespace-nowrap">
                   LUXEUPHO
                 </span>
+
                 <span className="text-[8px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] uppercase text-[#B88E52] font-bold mt-1 hidden sm:block whitespace-nowrap">
                   Furniture &amp; Home Interiors
                 </span>
@@ -107,6 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Home
             </button>
+
             <button
               type="button"
               onClick={() => onNavigateTab('furniture')}
@@ -114,6 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Furniture
             </button>
+
             <button
               type="button"
               onClick={() => onNavigateTab('categories')}
@@ -121,6 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Categories
             </button>
+
             <button
               type="button"
               onClick={() => onNavigateTab('about')}
