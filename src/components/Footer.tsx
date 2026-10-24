@@ -25,9 +25,7 @@ export const Footer: React.FC<FooterProps> = ({
   return (
     <footer className="bg-[#FAF6F0] text-[#1C1917] border-t border-[#E5DBCB] pt-16 pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#E8DFC9]">
-
           {/* Brand Information */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-4">
@@ -128,17 +126,7 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <span className="font-medium text-[#1C1917]">
-                  5-Year Structural Warranty
-                </span>
-              </li>
-              <li>
-                <span className="font-medium text-[#1C1917]">
                   PhonePe &amp; UPI Integration
-                </span>
-              </li>
-              <li>
-                <span className="font-medium text-[#1C1917]">
-                  7 Days Easy Support Policy
                 </span>
               </li>
               <li>
@@ -208,7 +196,6 @@ export const Footer: React.FC<FooterProps> = ({
             <ArrowUp className="w-3.5 h-3.5 text-[#B88E52]" />
           </button>
         </div>
-
       </div>
     </footer>
   );
