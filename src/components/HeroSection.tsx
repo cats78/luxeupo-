@@ -27,11 +27,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banners = [], onShopNo
 
           <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full py-20">
             <div className="max-w-xl text-white">
-              <span className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-[#EAD0A8] block mb-3 font-sans">
+              <span className="text-xs sm:text-sm font-normal tracking-[0.25em] uppercase text-[#EAD0A8] block mb-3 font-sans">
                 PREMIUM FURNITURE COLLECTION
               </span>
 
-              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.12] mb-5">
+              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal text-white tracking-wide leading-[1.15] mb-5">
                 Luxury Living <br /> Starts Here
               </h1>
 
@@ -42,7 +42,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banners = [], onShopNo
 
               <button
                 onClick={onShopNow}
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#B88E52] hover:bg-[#A57D43] text-white font-medium text-sm rounded-md transition-all shadow-md group"
+                className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#B88E52] hover:bg-[#A57D43] text-white font-normal text-sm tracking-wider uppercase rounded-md transition-all shadow-md group"
               >
                 <span>Shop Now</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -52,7 +52,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banners = [], onShopNo
         </div>
       )}
 
-      {/* Value Propositions Bar (Exact match with reference image: 4 badges on white background) */}
+      {/* Value Propositions Bar (4 badges on white background) */}
       <div className="bg-white border-b border-[#E7E5E4] py-6 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
@@ -63,10 +63,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banners = [], onShopNo
                 <ShieldCheck className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Premium Quality
                 </h4>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#78716C] font-light">
                   Built to last
                 </p>
               </div>
@@ -78,10 +78,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banners = [], onShopNo
                 <Truck className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Fast Delivery
                 </h4>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#78716C] font-light">
                   Across India
                 </p>
               </div>
@@ -93,10 +93,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banners = [], onShopNo
                 <CreditCard className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Secure Payment
                 </h4>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#78716C] font-light">
                   PhonePe &amp; UPI Only
                 </p>
               </div>
@@ -108,10 +108,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ banners = [], onShopNo
                 <Headphones className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Easy Support
                 </h4>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#78716C] font-light">
                   We're here to help
                 </p>
               </div>

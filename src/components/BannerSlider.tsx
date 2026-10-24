@@ -90,14 +90,14 @@ export const BannerSlider: React.FC<BannerSliderProps> = ({ banners, onCtaClick 
           
           {/* Badge */}
           {currentBanner.badge && (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-[#EAD0A8]/40 text-[#EAD0A8] text-xs font-semibold tracking-[0.2em] uppercase mb-4 animate-in fade-in duration-500">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-[#EAD0A8]/40 text-[#EAD0A8] text-xs font-normal tracking-[0.25em] uppercase mb-4 animate-in fade-in duration-500">
               <Sparkles className="w-3.5 h-3.5 text-[#B88E52]" />
               <span>{currentBanner.badge}</span>
             </div>
           )}
 
           {/* Heading */}
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.12] mb-5 drop-shadow-sm">
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal tracking-wide text-white leading-[1.15] mb-5 drop-shadow-sm">
             {currentBanner.title}
           </h1>
 
@@ -110,14 +110,14 @@ export const BannerSlider: React.FC<BannerSliderProps> = ({ banners, onCtaClick 
           <div className="flex flex-wrap items-center gap-4">
             <button
               onClick={() => handleCta(currentBanner.buttonLink || '#furniture-section')}
-              className="px-7 py-3.5 sm:px-8 sm:py-4 bg-[#B88E52] hover:bg-[#A57D43] text-white font-semibold text-xs sm:text-sm tracking-wider uppercase rounded-md shadow-lg transition-all flex items-center gap-2 group"
+              className="px-7 py-3.5 sm:px-8 sm:py-4 bg-[#B88E52] hover:bg-[#A57D43] text-white font-normal text-xs sm:text-sm tracking-wider uppercase rounded-md shadow-lg transition-all flex items-center gap-2 group"
             >
               <span>{currentBanner.buttonText || 'Shop Now →'}</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
             <a
               href="#support-section"
-              className="px-6 py-3.5 sm:px-7 sm:py-4 border border-white/40 text-white font-medium text-xs sm:text-sm tracking-wider uppercase rounded-md hover:bg-white/15 transition-all backdrop-blur-sm"
+              className="px-6 py-3.5 sm:px-7 sm:py-4 border border-white/40 text-white font-normal text-xs sm:text-sm tracking-wider uppercase rounded-md hover:bg-white/15 transition-all backdrop-blur-sm"
             >
               Private Consultation
             </a>

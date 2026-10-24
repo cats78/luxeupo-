@@ -33,20 +33,20 @@ export const PaymentNoticeModal: React.FC<PaymentNoticeModalProps> = ({ isOpen, 
           <Sparkles className="w-7 h-7" />
         </div>
 
-        <span className="text-[11px] uppercase tracking-[0.25em] text-[#B88E52] font-bold block mb-2 font-sans">
+        <span className="text-[11px] uppercase tracking-[0.25em] text-[#B88E52] font-normal block mb-2 font-sans">
           LUXEUPHO Storefront Notice
         </span>
 
-        {/* Exact User Prompt Copy */}
-        <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#1C1917] leading-snug mb-3">
+        {/* User Prompt Copy */}
+        <h3 className="font-serif text-xl sm:text-2xl font-normal text-[#1C1917] leading-snug mb-3 tracking-wide">
           We’re creating a smooth shopping experience for you. Online ordering and payments will be available soon.
         </h3>
 
-        <div className="p-3 bg-[#FAF8F5] border border-[#E7E5E4] rounded-xl text-xs text-[#57534E] leading-relaxed mb-6 font-medium">
+        <div className="p-3 bg-[#FAF8F5] border border-[#E7E5E4] rounded-xl text-xs text-[#57534E] leading-relaxed mb-6 font-normal">
           No cash on delivery and no online payments for now.
         </div>
 
-        <p className="text-xs text-[#78716C] mb-6 leading-relaxed">
+        <p className="text-xs text-[#78716C] mb-6 leading-relaxed font-light">
           In the meantime, our showroom concierge is actively assisting clients with bespoke consultations, piece inquiries, and direct appointments.
         </p>
 
@@ -56,7 +56,7 @@ export const PaymentNoticeModal: React.FC<PaymentNoticeModalProps> = ({ isOpen, 
             href={`https://wa.me/91${settings.phone}?text=${encodeURIComponent('Hello LUXEUPHO, I would like to inquire about furniture pieces and bespoke orders.')}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="py-3 px-4 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
+            className="py-3 px-4 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
           >
             <MessageCircle className="w-4 h-4" />
             <span>Inquire on WhatsApp</span>
@@ -64,7 +64,7 @@ export const PaymentNoticeModal: React.FC<PaymentNoticeModalProps> = ({ isOpen, 
 
           <a
             href={`tel:${settings.phone}`}
-            className="py-3 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
+            className="py-3 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
           >
             <Phone className="w-4 h-4" />
             <span>Call {settings.phone}</span>

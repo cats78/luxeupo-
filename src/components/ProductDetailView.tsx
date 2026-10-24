@@ -111,28 +111,28 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
           </div>
 
-          {/* Right: Product Info & Actions (Exact match from reference image) */}
+          {/* Right: Product Info & Actions */}
           <div className="lg:col-span-5 space-y-6">
             
             {/* Title */}
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1C1917]">
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#1C1917] tracking-wide">
               {product.name}
             </h1>
 
             {/* Pricing Row: Price, Strikethrough, and Gold Discount Badge */}
             <div className="flex items-center gap-3">
-              <span className="text-2xl sm:text-3xl font-bold text-[#1C1917]">
+              <span className="text-2xl sm:text-3xl font-normal text-[#1C1917]">
                 ₹ {product.price.toLocaleString('en-IN')}
               </span>
 
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-base text-[#A8A29E] line-through font-normal">
+                <span className="text-base text-[#A8A29E] line-through font-light">
                   ₹ {product.originalPrice.toLocaleString('en-IN')}
                 </span>
               )}
 
               {product.discountPercent && product.discountPercent > 0 && (
-                <span className="px-2 py-0.5 rounded bg-[#FAF5EC] text-[#B88E52] border border-[#E8DFC9] text-xs font-bold uppercase tracking-wide">
+                <span className="px-2 py-0.5 rounded bg-[#FAF5EC] text-[#B88E52] border border-[#E8DFC9] text-xs font-normal uppercase tracking-wide">
                   {product.discountPercent}% OFF
                 </span>
               )}
@@ -145,18 +145,18 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   <Star key={i} className="w-3.5 h-3.5 fill-[#B88E52]" />
                 ))}
               </div>
-              <span className="font-semibold text-[#1C1917]">(4.8)</span>
-              <span className="text-[#78716C]">120 Reviews</span>
+              <span className="font-normal text-[#1C1917]">(4.8)</span>
+              <span className="text-[#78716C] font-light">120 Reviews</span>
             </div>
 
             {/* Description */}
-            <p className="text-xs sm:text-sm text-[#57534E] leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-[#57534E] leading-relaxed font-light">
               {product.description}
             </p>
 
             {/* Color Swatches */}
             <div className="space-y-2 pt-1">
-              <span className="block text-xs font-semibold text-[#1C1917]">
+              <span className="block text-xs font-normal text-[#1C1917] uppercase tracking-wider">
                 Color
               </span>
               <div className="flex items-center gap-3">
@@ -178,22 +178,22 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
             {/* Quantity Stepper */}
             <div className="space-y-2 pt-1">
-              <span className="block text-xs font-semibold text-[#1C1917]">
+              <span className="block text-xs font-normal text-[#1C1917] uppercase tracking-wider">
                 Quantity
               </span>
               <div className="inline-flex items-center border border-[#D6D3D1] rounded-md bg-white text-xs">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-1.5 font-bold hover:bg-[#FAF8F5] transition-colors"
+                  className="px-3 py-1.5 font-normal hover:bg-[#FAF8F5] transition-colors"
                 >
                   -
                 </button>
-                <span className="px-3 py-1.5 font-semibold text-[#1C1917] min-w-[2rem] text-center">
+                <span className="px-3 py-1.5 font-normal text-[#1C1917] min-w-[2rem] text-center">
                   {quantity}
                 </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="px-3 py-1.5 font-bold hover:bg-[#FAF8F5] transition-colors"
+                  className="px-3 py-1.5 font-normal hover:bg-[#FAF8F5] transition-colors"
                 >
                   +
                 </button>
@@ -204,7 +204,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             <div className="space-y-3 pt-2">
               <button
                 onClick={handleAddToCart}
-                className="w-full py-3.5 px-6 rounded-md bg-[#B88E52] hover:bg-[#A57D43] text-white font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+                className="w-full py-3.5 px-6 rounded-md bg-[#B88E52] hover:bg-[#A57D43] text-white font-normal text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition-all"
               >
                 {addedAnimation ? (
                   <>
@@ -221,7 +221,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
               <button
                 onClick={handleBuyNowClick}
-                className="w-full py-3.5 px-6 rounded-md bg-white hover:bg-[#FAF8F5] text-[#1C1917] border border-[#1C1917] font-medium text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
+                className="w-full py-3.5 px-6 rounded-md bg-white hover:bg-[#FAF8F5] text-[#1C1917] border border-[#1C1917] font-normal text-sm tracking-wide flex items-center justify-center gap-2 transition-all shadow-sm"
               >
                 <Zap className="w-4 h-4 fill-[#1C1917]" />
                 <span>Buy Now</span>
@@ -245,10 +245,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <ShieldCheck className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Premium Quality
                 </h4>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#78716C] font-light">
                   Built to last
                 </p>
               </div>
@@ -260,10 +260,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <Truck className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Free Delivery
                 </h4>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#78716C] font-light">
                   Across India
                 </p>
               </div>
@@ -275,11 +275,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <CreditCard className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Secure Payment
                 </h4>
-                <p className="text-xs text-[#78716C]">
-                  PhonePe & UPI Only
+                <p className="text-xs text-[#78716C] font-light">
+                  PhonePe &amp; UPI Only
                 </p>
               </div>
             </div>
@@ -290,10 +290,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <RotateCcw className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#1C1917] leading-snug">
+                <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
                   Easy Returns
                 </h4>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#78716C] font-light">
                   7 Days Policy
                 </p>
               </div>

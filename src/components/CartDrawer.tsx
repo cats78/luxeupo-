@@ -42,10 +42,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
                 <ShoppingBag className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="font-serif text-lg font-bold text-[#1C1917] tracking-wide leading-none">
+                <h2 className="font-serif text-lg font-normal text-[#1C1917] tracking-wide leading-none">
                   Your Shopping Bag
                 </h2>
-                <span className="text-xs text-[#78716C] mt-0.5 block">
+                <span className="text-xs text-[#78716C] mt-0.5 block font-light">
                   {items.length} {items.length === 1 ? 'selected piece' : 'selected pieces'}
                 </span>
               </div>
@@ -58,15 +58,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
             </button>
           </div>
 
-          {/* Pending Payment Notice Announcement Strip (Exact user copy) */}
+          {/* Pending Payment Notice Announcement Strip */}
           <div className="bg-[#FAF0DD] border-b border-[#E8DFC9] px-5 py-3 text-xs text-[#8C7654] shrink-0">
             <div className="flex items-start gap-2">
               <Sparkles className="w-4 h-4 text-[#B88E52] shrink-0 mt-0.5" />
               <div className="leading-snug">
-                <span className="font-semibold block text-[#1C1917]">
+                <span className="font-medium block text-[#1C1917]">
                   Storefront Launch Update:
                 </span>
-                <span>
+                <span className="font-light">
                   We’re creating a smooth shopping experience for you. Online ordering and payments will be available soon.
                 </span>
               </div>
@@ -80,15 +80,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
                 <div className="w-16 h-16 rounded-full bg-[#FAF0DD] flex items-center justify-center text-[#B88E52] mb-4">
                   <ShoppingBag className="w-8 h-8 stroke-1" />
                 </div>
-                <h3 className="font-serif text-lg font-bold text-[#1C1917] mb-1">
+                <h3 className="font-serif text-lg font-normal text-[#1C1917] mb-1">
                   Your bag is currently empty
                 </h3>
-                <p className="text-xs text-[#78716C] max-w-xs mb-6 leading-relaxed">
+                <p className="text-xs text-[#78716C] max-w-xs mb-6 leading-relaxed font-light">
                   Explore our curated architectural furniture and select your signature pieces.
                 </p>
                 <button
                   onClick={() => setIsCartOpen(false)}
-                  className="px-6 py-2.5 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm"
+                  className="px-6 py-2.5 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-wider rounded-lg transition-colors shadow-sm"
                 >
                   Explore Catalog
                 </button>
@@ -130,22 +130,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
                       <div className="flex items-center border border-[#D6D3D1] bg-white rounded-md text-xs">
                         <button
                           onClick={() => updateQuantity(idx, item.quantity - 1)}
-                          className="px-2.5 py-1 font-bold hover:bg-[#FAF8F5]"
+                          className="px-2.5 py-1 font-normal hover:bg-[#FAF8F5]"
                         >
                           -
                         </button>
-                        <span className="px-3 py-1 font-semibold text-[#1C1917]">
+                        <span className="px-3 py-1 font-normal text-[#1C1917]">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => updateQuantity(idx, item.quantity + 1)}
-                          className="px-2.5 py-1 font-bold hover:bg-[#FAF8F5]"
+                          className="px-2.5 py-1 font-normal hover:bg-[#FAF8F5]"
                         >
                           +
                         </button>
                       </div>
 
-                      <span className="text-sm font-bold text-[#1C1917]">
+                      <span className="text-sm font-normal text-[#1C1917]">
                         ₹ {(item.product.price * item.quantity).toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -161,13 +161,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
               <div className="space-y-1.5 text-xs text-[#57534E]">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-[#1C1917]">₹ {subtotal.toLocaleString('en-IN')}</span>
+                  <span className="font-normal text-[#1C1917]">₹ {subtotal.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>White-Glove Pan-India Setup</span>
-                  <span className="font-semibold text-[#3E7B54]">Complimentary</span>
+                  <span className="font-normal text-[#3E7B54]">Complimentary</span>
                 </div>
-                <div className="flex justify-between text-base font-bold text-[#1C1917] pt-2 border-t border-[#F5F5F4]">
+                <div className="flex justify-between text-base font-normal text-[#1C1917] pt-2 border-t border-[#F5F5F4]">
                   <span>Estimated Total</span>
                   <span>₹ {total.toLocaleString('en-IN')}</span>
                 </div>
@@ -175,22 +175,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
 
               {/* Exact User Notice Box */}
               <div className="p-3 bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl text-xs space-y-1">
-                <div className="font-semibold text-[#1C1917] flex items-center gap-1.5">
+                <div className="font-medium text-[#1C1917] flex items-center gap-1.5">
                   <AlertCircle className="w-4 h-4 text-[#B88E52]" />
                   <span>Online Ordering Coming Soon</span>
                 </div>
-                <p className="text-[11px] text-[#78716C] leading-relaxed">
+                <p className="text-[11px] text-[#78716C] leading-relaxed font-light">
                   We’re creating a smooth shopping experience for you. Online ordering and payments will be available soon. No cash on delivery and no online payments for now.
                 </p>
               </div>
 
-              {/* Proceed to Checkout Button (Invokes launch notice per requirement #8) */}
+              {/* Proceed to Checkout Button */}
               <button
                 type="button"
                 onClick={() => {
                   if (handleOpenNotice) handleOpenNotice();
                 }}
-                className="w-full py-3 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
+                className="w-full py-3 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
               >
                 <span>Proceed to Checkout</span>
               </button>
@@ -201,7 +201,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
                   href={`https://wa.me/91${settings.phone}?text=${encodeURIComponent(`Hello LUXEUPHO, I would like to reserve pieces in my shopping bag: ${items.map(i => `${i.product.name} (Qty ${i.quantity})`).join(', ')}. Total: ₹${total.toLocaleString('en-IN')}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-3 px-3 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  className="py-3 px-3 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>WhatsApp Concierge</span>
@@ -209,7 +209,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
 
                 <a
                   href={`tel:${settings.phone}`}
-                  className="py-3 px-3 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  className="py-3 px-3 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                 >
                   <Phone className="w-4 h-4" />
                   <span>Call {settings.phone}</span>

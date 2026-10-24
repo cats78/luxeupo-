@@ -65,9 +65,9 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Left Sidebar: Filter Panel (Exact match from bottom-left reference image) */}
+          {/* Left Sidebar: Filter Panel */}
           <div className="lg:col-span-3 bg-white rounded-xl border border-[#E7E5E4] p-6 shadow-sm space-y-6">
-            <h3 className="text-base font-bold text-[#1C1917] pb-2 border-b border-[#F5F5F4]">
+            <h3 className="text-base font-medium text-[#1C1917] pb-2 border-b border-[#F5F5F4] tracking-wide">
               Filter
             </h3>
 
@@ -75,7 +75,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
             <div className="space-y-3">
               <button
                 onClick={() => setCategoryOpen(!categoryOpen)}
-                className="w-full flex items-center justify-between text-sm font-semibold text-[#1C1917]"
+                className="w-full flex items-center justify-between text-sm font-medium text-[#1C1917]"
               >
                 <span>Category</span>
                 {categoryOpen ? <ChevronUp className="w-4 h-4 text-[#78716C]" /> : <ChevronDown className="w-4 h-4 text-[#78716C]" />}
@@ -88,7 +88,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
                     return (
                       <label
                         key={cat}
-                        className="flex items-center gap-3 text-sm text-[#57534E] hover:text-[#1C1917] cursor-pointer"
+                        className="flex items-center gap-3 text-sm text-[#57534E] hover:text-[#1C1917] cursor-pointer font-light"
                       >
                         <input
                           type="checkbox"
@@ -106,7 +106,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
 
             {/* Price Range Slider */}
             <div className="space-y-3 pt-4 border-t border-[#F5F5F4]">
-              <span className="block text-sm font-semibold text-[#1C1917]">
+              <span className="block text-sm font-medium text-[#1C1917]">
                 Price Range
               </span>
               <input
@@ -118,7 +118,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full accent-[#B88E52] h-1.5 bg-[#E7E5E4] rounded-lg cursor-pointer"
               />
-              <div className="flex justify-between text-xs text-[#78716C] font-medium">
+              <div className="flex justify-between text-xs text-[#78716C] font-normal">
                 <span>₹5,000</span>
                 <span>₹{maxPrice.toLocaleString('en-IN')}</span>
               </div>
@@ -127,7 +127,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
             {/* Color Swatches */}
             <div className="space-y-3 pt-4 border-t border-[#F5F5F4]">
               <div className="flex justify-between items-center">
-                <span className="block text-sm font-semibold text-[#1C1917]">
+                <span className="block text-sm font-medium text-[#1C1917]">
                   Color
                 </span>
                 {selectedColor && (
@@ -167,10 +167,10 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
             {/* Header: Title, Subtitle, and Sort dropdown */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
               <div>
-                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#1C1917]">
+                <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#1C1917] tracking-wide">
                   Our Furniture
                 </h2>
-                <p className="text-xs sm:text-sm text-[#78716C] mt-0.5">
+                <p className="text-xs sm:text-sm text-[#78716C] mt-0.5 font-light">
                   Premium pieces. Designed for modern living.
                 </p>
               </div>
@@ -180,7 +180,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 text-xs border border-[#E7E5E4] rounded-md bg-white text-[#1C1917] font-medium focus:border-[#B88E52] focus:outline-none shadow-sm cursor-pointer"
+                  className="px-3 py-2 text-xs border border-[#E7E5E4] rounded-md bg-white text-[#1C1917] font-normal focus:border-[#B88E52] focus:outline-none shadow-sm cursor-pointer"
                 >
                   <option value="featured">Sort by: Featured</option>
                   <option value="price-low">Sort by: Price: Low to High</option>
@@ -190,9 +190,9 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
               </div>
             </div>
 
-            {/* 3-Column Product Grid (Exact match with reference image) */}
+            {/* 3-Column Product Grid */}
             {filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-xl border border-[#E7E5E4] p-12 text-center text-[#78716C] text-sm">
+              <div className="bg-white rounded-xl border border-[#E7E5E4] p-12 text-center text-[#78716C] text-sm font-light">
                 No pieces match your selected filter criteria.
               </div>
             ) : (
@@ -245,12 +245,12 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
                           href={productUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block text-sm font-semibold text-[#1C1917] group-hover:text-[#B88E52] transition-colors mb-1 truncate"
+                          className="block text-sm font-normal text-[#1C1917] group-hover:text-[#B88E52] transition-colors mb-1 truncate"
                         >
                           {product.name}
                         </a>
 
-                        <div className="text-sm font-semibold text-[#1C1917]">
+                        <div className="text-sm font-normal text-[#1C1917]">
                           ₹ {product.price.toLocaleString('en-IN')}
                         </div>
                       </div>

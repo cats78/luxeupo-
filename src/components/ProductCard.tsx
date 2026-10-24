@@ -48,13 +48,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {product.isFeatured && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#121214] text-[#E5D5BA] text-[10px] font-bold tracking-widest uppercase rounded-sm shadow-sm">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#121214] text-[#E5D5BA] text-[10px] font-normal tracking-widest uppercase rounded-sm shadow-sm">
               <Sparkles className="w-2.5 h-2.5 text-[#C5A880]" />
               Signature
             </span>
           )}
           {product.discountPercent && product.discountPercent > 0 && (
-            <span className="inline-block px-2 py-0.5 bg-[#9A7B4F] text-white text-[10px] font-bold tracking-wider uppercase rounded-sm shadow-sm">
+            <span className="inline-block px-2 py-0.5 bg-[#9A7B4F] text-white text-[10px] font-normal tracking-wider uppercase rounded-sm shadow-sm">
               {product.discountPercent}% OFF
             </span>
           )}
@@ -71,7 +71,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <button
             onClick={handleQuickAdd}
             disabled={!product.inStock}
-            className={`w-full py-2 px-3 rounded-sm text-xs uppercase tracking-wider font-bold transition-all shadow-md flex items-center justify-center gap-1.5 ${
+            className={`w-full py-2 px-3 rounded-sm text-xs uppercase tracking-wider font-medium transition-all shadow-md flex items-center justify-center gap-1.5 ${
               isAdding
                 ? 'bg-[#4B6B56] text-white'
                 : 'bg-[#121214] text-[#E5D5BA] hover:bg-[#C5A880] hover:text-[#121214]'
@@ -88,7 +88,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div>
           <div className="flex items-center justify-between text-[11px] text-[#8C867D] uppercase tracking-wider mb-1">
             <span>{product.category}</span>
-            <span className={product.inStock ? 'text-[#3E7B54] font-medium' : 'text-[#A04040]'}>
+            <span className={product.inStock ? 'text-[#3E7B54] font-normal' : 'text-[#A04040]'}>
               {product.inStock ? 'In Stock' : 'Bespoke Order'}
             </span>
           </div>
@@ -97,7 +97,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             href={productUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="block font-serif-luxury text-base sm:text-lg font-bold text-[#121214] group-hover:text-[#9A7B4F] transition-colors line-clamp-1 mb-2"
+            className="block font-serif text-base sm:text-lg font-normal text-[#121214] group-hover:text-[#9A7B4F] transition-colors line-clamp-1 mb-2 tracking-wide"
           >
             {product.name}
           </a>
@@ -109,7 +109,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Color & Material previews */}
           {product.materials && product.materials.length > 0 && (
             <div className="text-[11px] text-[#8C867D] mb-3 flex items-center gap-1.5 flex-wrap">
-              <span className="font-medium text-[#121214]">Material:</span>
+              <span className="font-normal text-[#121214]">Material:</span>
               <span className="truncate">{product.materials[0]}</span>
             </div>
           )}
@@ -118,11 +118,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Pricing & Link */}
         <div className="pt-3 border-t border-[#F0EBE1] flex items-baseline justify-between">
           <div className="flex items-baseline gap-2">
-            <span className="text-base sm:text-lg font-bold text-[#121214]">
+            <span className="text-base sm:text-lg font-normal text-[#121214]">
               ₹{product.price.toLocaleString('en-IN')}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-xs text-[#9E988F] line-through">
+              <span className="text-xs text-[#9E988F] line-through font-light">
                 ₹{product.originalPrice.toLocaleString('en-IN')}
               </span>
             )}
@@ -132,7 +132,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             href={productUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] font-bold uppercase tracking-widest text-[#9A7B4F] hover:text-[#7A5F39] flex items-center gap-1"
+            className="text-[11px] font-normal uppercase tracking-widest text-[#9A7B4F] hover:text-[#7A5F39] flex items-center gap-1"
           >
             <span>View Details</span>
             <ExternalLink className="w-3 h-3" />

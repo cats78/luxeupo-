@@ -23,10 +23,10 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
             className="absolute inset-0 w-full h-full object-cover filter brightness-[0.45]"
           />
           <div className="relative z-10 max-w-2xl">
-            <span className="text-xs uppercase tracking-[0.2em] font-semibold text-[#EAD0A8] block mb-2 font-sans">
+            <span className="text-xs uppercase tracking-[0.25em] font-normal text-[#EAD0A8] block mb-2 font-sans">
               OUR COLLECTION
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-3">
+            <h2 className="font-serif text-3xl sm:text-4xl font-normal text-white tracking-wide mb-3">
               Shop by Category
             </h2>
             <p className="text-sm text-[#F5F5F4] font-light">
@@ -35,7 +35,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
           </div>
         </div>
 
-        {/* 5 Category Cards in a Row (Exact match from reference image: Sofas, Beds, Dining, Storage, Chairs) */}
+        {/* 5 Category Cards in a Row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
           {categories.slice(0, 5).map((cat) => (
             <div
@@ -52,10 +52,10 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
               </div>
 
               <div>
-                <h3 className="font-medium text-base text-[#1C1917] mb-1">
+                <h3 className="font-normal text-base text-[#1C1917] mb-1">
                   {cat.name}
                 </h3>
-                <span className="inline-flex items-center gap-1 text-xs text-[#78716C] group-hover:text-[#B88E52] transition-colors font-medium">
+                <span className="inline-flex items-center gap-1 text-xs text-[#78716C] group-hover:text-[#B88E52] transition-colors font-normal">
                   <span>View All</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                 </span>
@@ -64,9 +64,9 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
           ))}
         </div>
 
-        {/* Split Promotional Banner (Exact match from reference image: "Furniture for Every Space") */}
+        {/* Split Promotional Banner */}
         <div className="rounded-2xl overflow-hidden border border-[#E7E5E4] bg-white grid grid-cols-1 md:grid-cols-12 shadow-sm">
-          {/* Left: Living Room Image with Sofa, Lamp & Plant */}
+          {/* Left: Living Room Image */}
           <div className="md:col-span-6 relative aspect-[16/9] md:aspect-auto min-h-[220px] bg-[#FAF8F5]">
             <img
               src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85"
@@ -75,18 +75,18 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
             />
           </div>
 
-          {/* Right: Warm Beige Container with Typography and Round Arrow Button */}
+          {/* Right: Container */}
           <div className="md:col-span-6 bg-[#F6F2EC] p-8 sm:p-12 flex flex-col justify-center">
-            <span className="text-[11px] uppercase tracking-[0.2em] font-semibold text-[#8C7654] block mb-2 font-sans">
+            <span className="text-[11px] uppercase tracking-[0.25em] font-normal text-[#8C7654] block mb-2 font-sans">
               MODERN &amp; ELEGANT
             </span>
 
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#1C1917] mb-3">
+                <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#1C1917] tracking-wide mb-3">
                   Furniture for Every Space
                 </h3>
-                <p className="text-xs sm:text-sm text-[#78716C] font-normal tracking-wide">
+                <p className="text-xs sm:text-sm text-[#78716C] font-light tracking-wide">
                   Living Room &nbsp;|&nbsp; Bedroom &nbsp;|&nbsp; Dining &nbsp;|&nbsp; Storage
                 </p>
               </div>

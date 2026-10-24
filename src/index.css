@@ -13,15 +13,31 @@
 
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
     color: #1a1a1a;
     background-color: #FAF9F6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, .font-serif, .font-serif-luxury {
-    font-family: 'Playfair Display', Georgia, serif;
-    letter-spacing: -0.01em;
+  /* Headings: Clean, elegant, normal-weight premium fonts */
+  h1, h2, h3, h4, h5, h6, .font-serif, .font-serif-luxury {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    letter-spacing: 0.015em;
+  }
+
+  /* LUXEUPHO Brand Name Typography */
+  .font-brand {
+    font-family: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+  }
+
+  /* General clean readable font utility */
+  .font-sans-clean {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
   }
 }
 

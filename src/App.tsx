@@ -362,10 +362,10 @@ function MainApp() {
         {currentTab === 'about' && (
           <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
             <div className="bg-white rounded-2xl border border-[#E7E5E4] p-8 sm:p-12 shadow-sm">
-              <span className="text-xs uppercase tracking-[0.25em] text-[#B88E52] font-semibold block mb-2">
+              <span className="text-xs uppercase tracking-[0.25em] text-[#B88E52] font-normal block mb-2 font-sans">
                 About LUXEUPHO
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1C1917] mb-4">
+              <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#1C1917] mb-4 tracking-wide">
                 Curating Timeless Modern Sanctuaries
               </h1>
               <p className="text-sm sm:text-base text-[#57534E] leading-relaxed max-w-2xl font-light">
@@ -374,20 +374,20 @@ function MainApp() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 mt-8 border-t border-[#F5F5F4]">
                 <div>
-                  <h4 className="font-bold text-sm text-[#1C1917] mb-1">Customer Care</h4>
-                  <a href={`tel:${settings.phone}`} className="text-sm text-[#B88E52] font-semibold hover:underline">
+                  <h4 className="font-medium text-sm text-[#1C1917] mb-1">Customer Care</h4>
+                  <a href={`tel:${settings.phone}`} className="text-sm text-[#B88E52] font-normal hover:underline">
                     {settings.phone}
                   </a>
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-[#1C1917] mb-1">Email Concierge</h4>
-                  <a href={`mailto:${settings.email}`} className="text-sm text-[#B88E52] font-semibold hover:underline break-all">
+                  <h4 className="font-medium text-sm text-[#1C1917] mb-1">Email Concierge</h4>
+                  <a href={`mailto:${settings.email}`} className="text-sm text-[#B88E52] font-normal hover:underline break-all">
                     {settings.email}
                   </a>
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-[#1C1917] mb-1">Delivery Region</h4>
-                  <span className="text-sm text-[#57534E]">Across India (White-Glove Setup)</span>
+                  <h4 className="font-medium text-sm text-[#1C1917] mb-1">Delivery Region</h4>
+                  <span className="text-sm text-[#57534E] font-light">Across India (White-Glove Setup)</span>
                 </div>
               </div>
             </div>

@@ -20,7 +20,7 @@ interface HeaderProps {
 }
 
 const LOGO_URL =
-  'https://i.ibb.co/fYfHj2J8/Polished-Gold-House-Monogram-Logo.png';
+  'https://i.ibb.co/RpyPhr4d/Polished-Gold-House-E-Emblem.png';
 
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
@@ -51,10 +51,10 @@ export const Header: React.FC<HeaderProps> = ({
       : [];
 
   const navClass = (tab: HeaderProps['currentTab']) =>
-    `text-sm tracking-wide transition-colors py-1 ${
+    `text-xs sm:text-sm tracking-[0.14em] uppercase transition-colors py-1 ${
       currentTab === tab
-        ? 'text-[#1C1917] font-semibold'
-        : 'text-[#57534E] font-medium hover:text-[#1C1917]'
+        ? 'text-[#1C1917] font-medium'
+        : 'text-[#57534E] font-normal hover:text-[#1C1917]'
     }`;
 
   return (
@@ -72,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <img
                 src={LOGO_URL}
-                alt="LUXEUPHO Gold House Monogram Logo"
+                alt="LUXEUPHO Gold House E Emblem"
                 width={240}
                 height={240}
                 loading="eager"
@@ -84,14 +84,17 @@ export const Header: React.FC<HeaderProps> = ({
                   opacity: 1,
                   imageRendering: 'auto',
                 }}
+                onError={(e) => {
+                  console.error('Unable to load the LUXEUPHO logo.');
+                }}
               />
 
               <div className="flex flex-col">
-                <span className="font-serif text-lg sm:text-2xl font-bold tracking-[0.08em] sm:tracking-[0.14em] text-[#B88E52] group-hover:text-[#B88E52] transition-colors leading-tight whitespace-nowrap">
+                <span className="font-brand text-xl sm:text-2xl font-normal tracking-[0.18em] sm:tracking-[0.24em] text-[#B88E52] group-hover:text-[#A57D43] transition-colors leading-tight whitespace-nowrap">
                   LUXEUPHO
                 </span>
 
-                <span className="text-[8px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] uppercase text-[#B88E52] font-bold mt-1 hidden sm:block whitespace-nowrap">
+                <span className="text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase text-[#B88E52] font-normal mt-1 hidden sm:block whitespace-nowrap">
                   Furniture &amp; Home Interiors
                 </span>
               </div>
@@ -153,7 +156,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Heart className="w-5 h-5 stroke-[1.8]" />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-[#B88E52] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 bg-[#B88E52] text-white text-[9px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
                   {wishlistCount}
                 </span>
               )}
@@ -166,7 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label="Shopping Bag"
             >
               <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
-              <span className="absolute -top-1.5 -right-2 bg-[#1C1917] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1.5 -right-2 bg-[#1C1917] text-white text-[10px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
                 {totalCount}
               </span>
             </button>
@@ -232,7 +235,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className="w-12 h-12 object-cover rounded-md border border-[#E7E5E4]"
                       />
                       <div>
-                        <div className="text-sm font-semibold text-[#1C1917] group-hover:text-[#B88E52] transition-colors">
+                        <div className="text-sm font-normal text-[#1C1917] group-hover:text-[#B88E52] transition-colors">
                           {product.name}
                         </div>
                         <div className="text-xs text-[#78716C]">
@@ -242,7 +245,7 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="font-semibold text-sm text-[#1C1917]">
+                      <span className="font-normal text-sm text-[#1C1917]">
                         ₹ {product.price.toLocaleString('en-IN')}
                       </span>
                       <ChevronRight className="w-4 h-4 text-[#A8A29E]" />
@@ -280,7 +283,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onNavigateTab(tab);
                 setMobileMenuOpen(false);
               }}
-              className="block w-full text-left py-2 text-base font-medium text-[#44403C]"
+              className="block w-full text-left py-2 text-sm uppercase tracking-[0.14em] font-normal text-[#44403C]"
             >
               {label}
             </button>
@@ -289,7 +292,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="pt-3 border-t border-[#E7E5E4] flex flex-col gap-3">
             <a
               href={settings.phone ? `tel:${settings.phone}` : undefined}
-              className="py-3 bg-[#B88E52] text-white rounded-md text-center text-xs font-bold uppercase tracking-wider shadow-sm"
+              className="py-3 bg-[#B88E52] text-white rounded-md text-center text-xs font-medium uppercase tracking-wider shadow-sm"
             >
               Customer Care: {settings.phone || 'Contact us'}
             </a>

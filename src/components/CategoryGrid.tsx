@@ -22,11 +22,11 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
-            <div className="flex items-center gap-2 text-[#9A7B4F] text-xs font-semibold tracking-[0.25em] uppercase mb-2">
+            <div className="flex items-center gap-2 text-[#9A7B4F] text-xs font-normal tracking-[0.25em] uppercase mb-2">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Curation by Space</span>
             </div>
-            <h2 className="font-serif-luxury text-3xl sm:text-4xl font-bold text-[#121214] tracking-tight">
+            <h2 className="font-serif text-3xl sm:text-4xl font-normal text-[#121214] tracking-wide">
               Architectural Collections
             </h2>
           </div>
@@ -66,7 +66,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
                   </div>
 
                   <div>
-                    <h3 className="font-serif-luxury text-lg sm:text-xl font-bold text-white mb-1 leading-snug group-hover:text-[#DFCDAA] transition-colors">
+                    <h3 className="font-serif text-lg sm:text-xl font-normal text-white mb-1 leading-snug group-hover:text-[#DFCDAA] transition-colors tracking-wide">
                       {cat.name}
                     </h3>
                     {cat.subcategories && cat.subcategories.length > 0 && (
@@ -74,7 +74,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
                         {cat.subcategories.slice(0, 3).join(' • ')}
                       </p>
                     )}
-                    <span className="inline-block mt-3 text-[10px] font-bold tracking-[0.2em] uppercase text-[#C5A880] opacity-90 group-hover:opacity-100 transition-opacity">
+                    <span className="inline-block mt-3 text-[10px] font-normal tracking-[0.2em] uppercase text-[#C5A880] opacity-90 group-hover:opacity-100 transition-opacity">
                       {isSelected ? 'Viewing Category' : 'Explore Pieces'}
                     </span>
                   </div>
