@@ -111,7 +111,7 @@ export const CategoriesTab: React.FC<CategoriesTabProps> = ({ categories }) => {
       setModalOpen(false);
     } catch (err: any) {
       console.error('Save category error:', err);
-      setErrorMessage('Failed to save category. Please check database permissions.');
+      setErrorMessage(err?.message || 'Failed to save category. Please check database permissions.');
     } finally {
       setSaving(false);
     }

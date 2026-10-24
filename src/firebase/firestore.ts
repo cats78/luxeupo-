@@ -63,6 +63,21 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
+// Recursively strips undefined fields so Firestore writes never fail with "Unsupported field value: undefined"
+export function sanitizeForFirestore<T extends Record<string, any>>(obj: T): T {
+  const clean: any = {};
+  for (const [key, val] of Object.entries(obj)) {
+    if (val !== undefined) {
+      if (val !== null && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)) {
+        clean[key] = sanitizeForFirestore(val);
+      } else {
+        clean[key] = val;
+      }
+    }
+  }
+  return clean;
+}
+
 // ---------------- PRODUCTS ---------------- //
 
 export async function fetchProducts(): Promise<Product[]> {
@@ -117,42 +132,39 @@ export function subscribeProducts(
 export async function saveProduct(product: Partial<Product> & { id?: string }): Promise<string> {
   const path = 'products';
   const now = new Date().toISOString();
+  const productId = product.id || doc(collection(db, path)).id;
+  const docRef = doc(db, path, productId);
+
+  const cleanData: Product = {
+    id: productId,
+    name: product.name || 'Bespoke Item',
+    category: product.category || 'Living Room Furniture',
+    subcategory: product.subcategory || '',
+    description: product.description || '',
+    price: Number(product.price) || 0,
+    originalPrice: Number(product.originalPrice) || Number(product.price) || 0,
+    discountPercent: Number(product.discountPercent) || 0,
+    images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [
+      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85'
+    ],
+    materials: Array.isArray(product.materials) ? product.materials : [],
+    colors: Array.isArray(product.colors) ? product.colors : [],
+    sizes: Array.isArray(product.sizes) ? product.sizes : [],
+    stock: typeof product.stock === 'number' ? product.stock : 1,
+    inStock: product.inStock !== false,
+    isFeatured: Boolean(product.isFeatured),
+    createdAt: product.createdAt || now,
+    updatedAt: now,
+  };
+
+  const payload = sanitizeForFirestore(cleanData);
+
   try {
-    if (product.id) {
-      const docRef = doc(db, path, product.id);
-      await updateDoc(docRef, {
-        ...product,
-        updatedAt: now
-      });
-      return product.id;
-    } else {
-      const newRef = doc(collection(db, path));
-      const cleanData: Product = {
-        id: newRef.id,
-        name: product.name || 'Bespoke Item',
-        category: product.category || 'Living Room Furniture',
-        subcategory: product.subcategory || '',
-        description: product.description || '',
-        price: Number(product.price) || 0,
-        originalPrice: Number(product.originalPrice) || Number(product.price) || 0,
-        discountPercent: Number(product.discountPercent) || 0,
-        images: product.images && product.images.length > 0 ? product.images : [
-          'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85'
-        ],
-        materials: product.materials || [],
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        stock: Number(product.stock) || 1,
-        inStock: product.inStock !== false,
-        isFeatured: Boolean(product.isFeatured),
-        createdAt: now,
-        updatedAt: now,
-      };
-      await setDoc(newRef, cleanData);
-      return newRef.id;
-    }
+    // setDoc with { merge: true } ensures reliable saving whether updating an existing document or creating a new one
+    await setDoc(docRef, payload, { merge: true });
+    return productId;
   } catch (error) {
-    handleFirestoreError(error, product.id ? OperationType.UPDATE : OperationType.CREATE, path);
+    handleFirestoreError(error, OperationType.WRITE, `products/${productId}`);
     throw error;
   }
 }
@@ -196,9 +208,11 @@ export function subscribeCategories(
 export async function saveCategory(category: Category): Promise<void> {
   const path = `categories/${category.id}`;
   try {
-    await setDoc(doc(db, 'categories', category.id), category);
+    const payload = sanitizeForFirestore(category);
+    await setDoc(doc(db, 'categories', category.id), payload, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
+    throw error;
   }
 }
 
@@ -208,6 +222,7 @@ export async function deleteCategory(categoryId: string): Promise<void> {
     await deleteDoc(doc(db, 'categories', categoryId));
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
+    throw error;
   }
 }
 
@@ -241,9 +256,11 @@ export function subscribeBanners(
 export async function saveBanner(banner: Banner): Promise<void> {
   const path = `banners/${banner.id}`;
   try {
-    await setDoc(doc(db, 'banners', banner.id), banner);
+    const payload = sanitizeForFirestore(banner);
+    await setDoc(doc(db, 'banners', banner.id), payload, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
+    throw error;
   }
 }
 
@@ -387,12 +404,14 @@ export function subscribeSettings(
 export async function updateStoreSettings(settings: StoreSettings): Promise<void> {
   const path = 'settings/store_config';
   try {
-    await setDoc(doc(db, 'settings', 'store_config'), {
+    const payload = sanitizeForFirestore({
       ...settings,
       updatedAt: new Date().toISOString()
     });
+    await setDoc(doc(db, 'settings', 'store_config'), payload, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
+    throw error;
   }
 }
 

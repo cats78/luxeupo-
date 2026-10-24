@@ -88,7 +88,7 @@ export const BannersTab: React.FC<BannersTabProps> = ({ banners }) => {
         id: bannerId,
         title: title.trim(),
         subtitle: subtitle.trim(),
-        badge: badge.trim() || undefined,
+        badge: badge.trim() || '',
         imageUrl: imageUrl.trim(),
         buttonText: buttonText.trim() || 'Explore Collection',
         buttonLink: buttonLink.trim() || '#furniture-section',
@@ -98,9 +98,9 @@ export const BannersTab: React.FC<BannersTabProps> = ({ banners }) => {
 
       await saveBanner(payload);
       setModalOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save banner error:', err);
-      setUploadError('Failed to save banner to database.');
+      setUploadError(err?.message || 'Failed to save banner to database.');
     } finally {
       setSaving(false);
     }

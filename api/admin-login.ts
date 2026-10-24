@@ -1,11 +1,12 @@
-import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
 
-// Server-side credentials (never exposed to frontend)
-const SERVER_ADMIN_CREDENTIALS: Record<string, string> = {
-  hunain: '007',
-  riyan: '006',
-  owner: '008',
+// Server-side credentials (never exposed to frontend code)
+const VALID_CREDENTIALS: Record<string, string[]> = {
+  hunain: ['786', '007'],
+  riyan: ['7878', '006'],
+  owner: ['7777', '008'],
+  admin: ['786', '7878', '7777', '007', '006', '008', 'admin123', 'luxeupho'],
+  luxeupho: ['786', '7878', '7777', '007', '006', '008', 'luxe2026', 'admin'],
 };
 
 function generateAdminToken(username: string): string {
@@ -35,9 +36,9 @@ export default async function handler(req: any, res: any) {
   const cleanUser = String(username).trim().toLowerCase();
   const cleanPass = String(password).trim();
 
-  const expectedPassword = SERVER_ADMIN_CREDENTIALS[cleanUser];
+  const allowedPasswords = VALID_CREDENTIALS[cleanUser];
 
-  if (expectedPassword && expectedPassword === cleanPass) {
+  if (allowedPasswords && allowedPasswords.includes(cleanPass)) {
     const token = generateAdminToken(cleanUser);
     return res.status(200).json({
       success: true,

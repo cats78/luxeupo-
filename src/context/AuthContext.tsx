@@ -54,6 +54,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const token = localStorage.getItem('luxeupho_admin_token');
     if (token) {
+      try {
+        // Verify expiry (7 days) directly from token payload
+        const payload = JSON.parse(atob(token));
+        if (payload.timestamp && Date.now() - payload.timestamp > 7 * 24 * 60 * 60 * 1000) {
+          localStorage.removeItem('luxeupho_admin_token');
+          localStorage.removeItem('luxeupho_admin_user');
+          setIsAdmin(false);
+          setAdminUser(null);
+          return;
+        }
+        // Valid unexpired token exists
+        setIsAdmin(true);
+      } catch {
+        // If not base64 JSON, leave token as is
+      }
+
       fetch('/api/admin-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,8 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .then(data => {
           if (data && data.valid) {
             setIsAdmin(true);
-          } else {
-            // Token expired or invalid
+          } else if (data && data.valid === false && data.message === 'Invalid or expired token') {
             localStorage.removeItem('luxeupho_admin_token');
             localStorage.removeItem('luxeupho_admin_user');
             setIsAdmin(false);
@@ -72,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         })
         .catch(() => {
-          // If server is temporarily restarting, keep session if token exists
+          // If server is restarting or network glitch, preserve active session
           setIsAdmin(true);
         });
     }

@@ -183,7 +183,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
       const productData: Partial<Product> = {
         name: name.trim(),
         category,
-        subcategory: subcategory.trim() || undefined,
+        subcategory: subcategory.trim() || '',
         description: description.trim(),
         price: Number(price) || 0,
         originalPrice: Number(originalPrice) || Number(price) || 0,
@@ -205,8 +205,8 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
       setModalOpen(false);
       if (onCloseAddModal) onCloseAddModal();
     } catch (err: any) {
-      console.error(err);
-      setUploadError('Failed to save product to database. Check connection or authorization.');
+      console.error('Failed to save product:', err);
+      setUploadError(err?.message || 'Failed to save product to database. Check connection or authorization.');
     } finally {
       setSaving(false);
     }
