@@ -3,9 +3,9 @@ import crypto from 'crypto';
 
 // Server-side credentials (never exposed to frontend)
 const SERVER_ADMIN_CREDENTIALS: Record<string, string> = {
-  hunain: '786',
-  riyan: '7878',
-  owner: '7777',
+  hunain: '007',
+  riyan: '006',
+  owner: '008',
 };
 
 function generateAdminToken(username: string): string {
