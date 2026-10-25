@@ -236,8 +236,9 @@ function MainApp() {
           </div>
           <Footer
             categories={categories}
-            onSelectCategory={(cat) => {
-              setSelectedCategory(cat);
+            onSelectCategory={(cat: any) => {
+              const categoryName = typeof cat === 'object' && cat ? cat.name : String(cat);
+              setSelectedCategory(categoryName);
               handleTabChange('furniture');
             }}
           />
@@ -269,8 +270,9 @@ function MainApp() {
 
         <Footer
           categories={categories}
-          onSelectCategory={(cat) => {
-            setSelectedCategory(cat);
+          onSelectCategory={(cat: any) => {
+            const categoryName = typeof cat === 'object' && cat ? cat.name : String(cat);
+            setSelectedCategory(categoryName);
             handleTabChange('furniture');
           }}
         />
@@ -369,7 +371,7 @@ function MainApp() {
                 LUXEUPHO was founded on a singular premise: furniture should be as enduring as the memories made around it. Every sofa, bed, dining set, and cabinet in our collection is precision-crafted with seasoned hardwoods, bookmatched veneers, and premium woven textiles.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 mt-8 border-t border-[#F5F5F4]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-8 mt-8 border-t border-[#F5F5F4]">
                 <div>
                   <h4 className="font-medium text-sm text-[#1C1917] mb-1">Customer Care</h4>
                   <a href={`tel:${settings.phone}`} className="text-sm text-[#B88E52] font-normal hover:underline">
@@ -381,6 +383,10 @@ function MainApp() {
                   <a href={`mailto:${settings.email}`} className="text-sm text-[#B88E52] font-normal hover:underline break-all">
                     {settings.email}
                   </a>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-[#1C1917] mb-1">Business Timings</h4>
+                  <span className="text-sm text-[#57534E] font-light">10:00 AM – 7:00 PM IST (Daily)</span>
                 </div>
                 <div>
                   <h4 className="font-medium text-sm text-[#1C1917] mb-1">Delivery Region</h4>
@@ -404,8 +410,9 @@ function MainApp() {
       {/* Footer */}
       <Footer
         categories={categories}
-        onSelectCategory={(catName) => {
-          setSelectedCategory(catName);
+        onSelectCategory={(catName: any) => {
+          const categoryName = typeof catName === 'object' && catName ? catName.name : String(catName);
+          setSelectedCategory(categoryName);
           setCurrentTab('furniture');
         }}
       />

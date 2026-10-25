@@ -182,7 +182,7 @@ export const SupportForm: React.FC = () => {
                     Concierge Hours
                   </span>
                   <span className="text-xs text-[#1C1917] font-normal">
-                    Monday – Sunday: 10:00 AM – 8:00 PM IST
+                    Monday – Sunday: 10:00 AM – 7:00 PM IST
                   </span>
                 </div>
               </div>

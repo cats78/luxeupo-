@@ -66,13 +66,13 @@ export const Header: React.FC<HeaderProps> = ({
     }`;
 
   const iconButtonClass =
-    'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#292524] transition-all duration-200 hover:bg-[#F8F3EB] hover:text-[#B88E52] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B88E52]';
+    'relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full text-[#292524] transition-all duration-200 hover:bg-[#F8F3EB] hover:text-[#B88E52] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B88E52]';
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E8E0D4] bg-white/95 backdrop-blur-xl">
       {/* Main Header */}
       <div className="mx-auto max-w-[1500px] px-3 sm:px-6 lg:px-10">
-        <div className="grid min-h-[88px] grid-cols-[1fr_auto] items-center gap-2 sm:min-h-[100px] md:grid-cols-[1fr_auto_1fr] md:gap-5 lg:min-h-[112px]">
+        <div className="grid min-h-[72px] sm:min-h-[88px] lg:min-h-[96px] grid-cols-[1fr_auto] items-center gap-2 sm:gap-4 md:grid-cols-[1fr_auto_1fr] md:gap-5">
 
           {/* Brand Logo and Name */}
           <div className="flex min-w-0 items-center justify-self-start">
@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onNavigateTab('home');
                 setMobileMenuOpen(false);
               }}
-              className="group flex min-w-0 items-center gap-2.5 text-left focus:outline-none sm:gap-3 lg:gap-4"
+              className="group flex min-w-0 items-center gap-2.5 sm:gap-3.5 lg:gap-4 text-left focus:outline-none"
               aria-label="LUXEUPHO Home"
             >
               <img
@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
                 loading="eager"
                 decoding="async"
                 draggable={false}
-                className="h-[68px] w-[68px] shrink-0 object-contain sm:h-[82px] sm:w-[82px] lg:h-[94px] lg:w-[94px]"
+                className="h-12 w-12 min-[380px]:h-14 min-[380px]:w-14 sm:h-[68px] sm:w-[68px] lg:h-[78px] lg:w-[78px] shrink-0 object-contain my-auto"
                 style={{
                   filter: 'none',
                   opacity: 1,
@@ -104,17 +104,13 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
               />
 
-              <div className="flex min-w-0 flex-col justify-center">
-                <span className="font-brand whitespace-nowrap text-[20px] font-normal leading-none tracking-[0.12em] text-[#B88E52] transition-colors duration-200 group-hover:text-[#9D753C] sm:text-[25px] sm:tracking-[0.16em] lg:text-[29px] lg:tracking-[0.18em]">
+              <div className="flex min-w-0 flex-col justify-center leading-none my-auto">
+                <span className="font-brand whitespace-nowrap text-[18px] min-[380px]:text-[21px] sm:text-[25px] lg:text-[28px] font-normal leading-tight tracking-[0.12em] sm:tracking-[0.16em] lg:tracking-[0.18em] text-[#B88E52] transition-colors duration-200 group-hover:text-[#9D753C]">
                   LUXEUPHO
                 </span>
 
-                <span className="mt-2 hidden whitespace-nowrap text-[8px] font-normal uppercase leading-relaxed tracking-[0.16em] text-[#78716C] sm:block sm:text-[9px] lg:text-[10px] lg:tracking-[0.22em]">
+                <span className="whitespace-nowrap text-[8px] min-[380px]:text-[8.5px] sm:text-[9.5px] lg:text-[10px] font-normal uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#78716C] leading-normal mt-0.5 sm:mt-1 block">
                   Furniture &amp; Home Interiors
-                </span>
-
-                <span className="mt-1.5 block text-[8px] font-normal uppercase tracking-[0.17em] text-[#B88E52] sm:hidden">
-                  Premium Living
                 </span>
               </div>
             </button>
