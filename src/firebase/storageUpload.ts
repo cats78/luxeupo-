@@ -10,7 +10,7 @@ export interface UploadProgressCallback {
  * compressing to high-quality JPEG/WebP) to guarantee fast uploads, crisp visuals,
  * and zero hanging across any device.
  */
-async function compressImage(file: File, maxDimension = 1000, quality = 0.72): Promise<string> {
+async function compressImage(file: File, maxDimension = 800, quality = 0.65): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -44,7 +44,7 @@ async function compressImage(file: File, maxDimension = 1000, quality = 0.72): P
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        const mimeType = file.type === 'image/png' && file.size < 500 * 1024 ? 'image/png' : 'image/jpeg';
+        const mimeType = 'image/jpeg';
         const dataUrl = canvas.toDataURL(mimeType, quality);
         resolve(dataUrl);
       };
@@ -81,13 +81,13 @@ export async function uploadImageToStorage(
 
   // Step 1: Read and optimize the image
   if (onProgress) onProgress(20);
-  const compressedDataUrl = await compressImage(file);
+  const compressedDataUrl = await compressImage(file, 800, 0.65);
   if (onProgress) onProgress(45);
 
   const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const uniquePath = `${folder}/${Date.now()}_${cleanFileName}`;
 
-  // Step 2: Attempt Firebase Storage upload with a strict timeout race so it NEVER freezes at 0%
+  // Step 2: Attempt Firebase Storage upload with a realistic timeout (20s)
   const tryFirebaseStorage = async (): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
       try {
@@ -125,10 +125,9 @@ export async function uploadImageToStorage(
     });
   };
 
-  // Timeout wrapper: If Firebase Storage doesn't respond within 3.5s (due to CORS/bucket setup),
-  // immediately use the optimized compressed image so the upload NEVER fails or hangs!
+  // 20-second timeout allows real network uploads to succeed while protecting from infinite hangs
   const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Firebase Storage timeout - using optimized high-res data stream')), 3500)
+    setTimeout(() => reject(new Error('Firebase Storage timeout - using optimized web-safe image')), 20000)
   );
 
   try {

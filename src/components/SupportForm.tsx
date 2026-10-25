@@ -30,7 +30,7 @@ export const SupportForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const inputClass =
-    'w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors';
+    'w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs';
 
   const labelClass =
     'block text-xs uppercase tracking-wider font-normal text-[#1C1917] mb-1.5';
@@ -190,7 +190,7 @@ export const SupportForm: React.FC = () => {
           </div>
 
           {/* Right Column: Support / Consultation Form */}
-          <div className="lg:col-span-7 bg-white border border-[#E7E5E4] rounded-2xl p-6 sm:p-8 shadow-md relative">
+          <div className="lg:col-span-7 bg-white border-2 border-[#D6C7B2] rounded-2xl p-6 sm:p-8 shadow-md relative">
             <h3 className="font-serif text-xl sm:text-2xl font-normal text-[#1C1917] mb-1.5 tracking-wide">
               Send an Enquiry or Service Request
             </h3>

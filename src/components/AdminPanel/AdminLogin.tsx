@@ -53,7 +53,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1C1917] flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-white border border-[#E7E5E4] rounded-2xl p-8 sm:p-10 shadow-xl relative overflow-hidden">
+      <div className="w-full max-w-md bg-white border-2 border-[#D6C7B2] rounded-2xl p-8 sm:p-10 shadow-xl relative overflow-hidden">
         
         {/* Top Decorative Gold Accent Line */}
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#B88E52] via-[#DFCDAA] to-[#B88E52]" />
@@ -100,7 +100,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter admin username"
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] rounded-lg text-[#1C1917] focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] rounded-lg text-[#1C1917] focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
                 autoComplete="username"
               />
               <User className="w-4 h-4 text-[#78716C] absolute left-3.5 top-3" />
@@ -118,7 +118,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] rounded-lg text-[#1C1917] focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] rounded-lg text-[#1C1917] focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
                 autoComplete="current-password"
               />
               <KeyRound className="w-4 h-4 text-[#78716C] absolute left-3.5 top-3" />
@@ -146,7 +146,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full py-2.5 px-4 bg-white border border-[#D6D3D1] hover:bg-[#FAF8F5] text-[#1C1917] transition-all rounded-lg font-medium text-xs tracking-wide flex items-center justify-center gap-2.5"
+          className="w-full py-2.5 px-4 bg-white border-2 border-[#D6D3D1] hover:border-[#1C1917] hover:bg-[#FAF8F5] text-[#1C1917] transition-all rounded-lg font-medium text-xs tracking-wide flex items-center justify-center gap-2.5 shadow-xs"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
@@ -172,10 +172,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
         <div className="mt-8 pt-6 border-t border-[#E7E5E4] text-center">
           <button
             onClick={onBackToStore}
-            className="text-xs text-[#78716C] hover:text-[#B88E52] flex items-center justify-center gap-1.5 mx-auto transition-colors font-medium"
+            className="px-4 py-2 bg-white border-2 border-[#D6D3D1] hover:border-[#1C1917] rounded-lg text-xs text-[#1C1917] hover:bg-[#FAF8F5] flex items-center justify-center gap-1.5 mx-auto transition-all font-medium shadow-xs cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Public Showroom</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-[#B88E52]" />
+            <span>Back to Public Showroom</span>
           </button>
         </div>
 

@@ -169,7 +169,7 @@ export const Footer: React.FC<FooterProps> = ({
                   required
                   placeholder="Enter your email"
                   aria-label="Email address"
-                  className="w-full px-3 py-2 text-xs bg-white border border-[#D6D3D1] text-[#1C1917] rounded-md focus:border-[#B88E52] focus:outline-none font-normal"
+                  className="w-full px-3 py-2 text-xs bg-white border-2 border-[#D6D3D1] text-[#1C1917] rounded-md focus:border-[#B88E52] focus:outline-none font-normal shadow-xs"
                 />
                 <button
                   type="submit"
@@ -184,15 +184,21 @@ export const Footer: React.FC<FooterProps> = ({
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#78716C] gap-4 font-normal">
-          <span>
-            &copy; {new Date().getFullYear()} LUXEUPHO Furniture &amp; Home
-            Interiors. All rights reserved.
-          </span>
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-center sm:text-left">
+            <span>
+              &copy; {new Date().getFullYear()} LUXEUPHO Furniture &amp; Home
+              Interiors. All rights reserved.
+            </span>
+            <span className="hidden sm:inline text-[#D6D3D1]">•</span>
+            <span className="text-[#8C867D] font-normal tracking-wide">
+              Designed by <span className="text-[#B88E52] font-medium">maaz_ali_36</span>
+            </span>
+          </div>
 
           <button
             type="button"
             onClick={scrollToTop}
-            className="flex items-center gap-1.5 text-[#78716C] hover:text-[#1C1917] transition-colors font-normal"
+            className="flex items-center gap-1.5 text-[#78716C] hover:text-[#1C1917] transition-colors font-normal cursor-pointer"
           >
             <span>Back to Top</span>
             <ArrowUp className="w-3.5 h-3.5 text-[#B88E52]" />

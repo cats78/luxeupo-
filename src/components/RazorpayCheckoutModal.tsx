@@ -10,6 +10,7 @@ import {
   Truck,
   Sparkles,
   Lock,
+  ArrowLeft,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
@@ -204,6 +205,35 @@ export const RazorpayCheckoutModal: React.FC = () => {
         theme: {
           color: '#B88E52', // LUXEUPHO signature champagne gold
         },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'Pay using UPI (QR Code, Google Pay, PhonePe)',
+                instruments: [
+                  {
+                    method: 'upi',
+                    flows: ['qr', 'intent', 'collect'],
+                    apps: ['google_pay', 'phonepe', 'paytm', 'bhim', 'cred'],
+                  },
+                ],
+              },
+              other: {
+                name: 'Cards, NetBanking & Others',
+                instruments: [
+                  { method: 'card' },
+                  { method: 'netbanking' },
+                  { method: 'wallet' },
+                  { method: 'emi' },
+                ],
+              },
+            },
+            sequence: ['block.upi', 'block.other'],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
+        },
         modal: {
           ondismiss: () => {
             setIsProcessing(false);
@@ -331,15 +361,15 @@ export const RazorpayCheckoutModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl border border-[#E5DBCB] shadow-2xl overflow-hidden my-6">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl border-2 border-[#D6C7B2] shadow-2xl overflow-hidden my-6">
         
         {/* Top Champagne Gold Accent Stripe */}
         <div className="h-1.5 bg-gradient-to-r from-[#B88E52] via-[#DFCDAA] to-[#B88E52]" />
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8DFC9] bg-[#FAF8F5]">
+        {/* Header with Clear Back Navigation */}
+        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-[#E8DFC9] bg-[#FAF8F5]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#FAF0DD] border border-[#E8DFC9] flex items-center justify-center text-[#B88E52]">
+            <div className="w-8 h-8 rounded-full bg-[#FAF0DD] border-2 border-[#E8DFC9] flex items-center justify-center text-[#B88E52]">
               <Lock className="w-4 h-4" />
             </div>
             <div>
@@ -352,14 +382,25 @@ export const RazorpayCheckoutModal: React.FC = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleClose}
-            className="p-1.5 text-[#78716C] hover:text-[#1C1917] rounded-full hover:bg-[#F5F2ED] transition-colors"
-            aria-label="Close Checkout"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-[#D6D3D1] hover:border-[#1C1917] rounded-lg text-xs font-normal text-[#1C1917] transition-all shadow-xs cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-[#B88E52]" />
+              <span>Back to Bag</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleClose}
+              className="p-1.5 text-[#78716C] hover:text-[#1C1917] rounded-full hover:bg-[#F5F2ED] transition-colors"
+              aria-label="Close Checkout"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* ---------------- CONFIRMED ORDER SUCCESS SCREEN ---------------- */}
@@ -461,7 +502,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors"
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
                   />
                 </div>
 
@@ -476,7 +517,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     placeholder="e.g. 9704796170"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors font-mono"
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all font-mono shadow-xs"
                   />
                 </div>
               </div>
@@ -491,7 +532,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors"
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
                   />
                 </div>
 
@@ -506,7 +547,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="e.g. 500034"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors font-mono"
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all font-mono shadow-xs"
                   />
                 </div>
               </div>
@@ -522,7 +563,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
                     value={shippingAddress}
                     onChange={(e) => setShippingAddress(e.target.value)}
                     placeholder="House/Villa No., Street, Area/Landmark"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors"
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
                   />
                 </div>
 
@@ -536,7 +577,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="e.g. Hyderabad"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-colors"
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
                   />
                 </div>
               </div>
@@ -574,7 +615,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
               </div>
 
               {/* Price Calculations */}
-              <div className="p-3.5 bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl space-y-1.5 text-xs">
+              <div className="p-3.5 bg-[#FAF8F5] border-2 border-[#E8DFC9] rounded-xl space-y-1.5 text-xs">
                 <div className="flex justify-between text-[#78716C]">
                   <span>Subtotal:</span>
                   <span>₹ {subtotal.toLocaleString('en-IN')}</span>
@@ -596,7 +637,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
             </div>
 
             {/* Payment Trust Marks */}
-            <div className="p-3 bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl flex items-center justify-between text-[11px] text-[#78716C]">
+            <div className="p-3 bg-[#FAF8F5] border-2 border-[#E8DFC9] rounded-xl flex items-center justify-between text-[11px] text-[#78716C]">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#B88E52]" />
                 <span>UPI, PhonePe, Google Pay, Credit/Debit Cards, EMI</span>
@@ -614,19 +655,30 @@ export const RazorpayCheckoutModal: React.FC = () => {
               </div>
             )}
 
-            {/* Pay Button */}
-            <button
-              type="submit"
-              disabled={isProcessing}
-              className="w-full py-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-[0.16em] rounded-xl flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-60 cursor-pointer"
-            >
-              <Lock className="w-4 h-4" />
-              <span>
-                {isProcessing
-                  ? 'Connecting to Razorpay...'
-                  : `Pay ₹ ${total.toLocaleString('en-IN')} via Razorpay`}
-              </span>
-            </button>
+            {/* Action Buttons: Clear Back Button + Pay Button */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="w-full sm:w-auto px-6 py-4 bg-white hover:bg-[#FAF8F5] text-[#1C1917] text-xs font-normal uppercase tracking-[0.14em] border-2 border-[#D6D3D1] hover:border-[#1C1917] rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4 text-[#B88E52]" />
+                <span>Back to Bag</span>
+              </button>
+
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className="w-full flex-1 py-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-[0.16em] border-2 border-[#B88E52] rounded-xl flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-60 cursor-pointer"
+              >
+                <Lock className="w-4 h-4" />
+                <span>
+                  {isProcessing
+                    ? 'Connecting to Razorpay...'
+                    : `Pay ₹ ${total.toLocaleString('en-IN')} via Razorpay`}
+                </span>
+              </button>
+            </div>
           </form>
         )}
       </div>

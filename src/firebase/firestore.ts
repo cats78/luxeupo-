@@ -420,11 +420,16 @@ export async function updateStoreSettings(settings: StoreSettings): Promise<void
 
 export async function seedInitialDatabaseIfEmpty(): Promise<void> {
   try {
+    const settingsDoc = await getDoc(doc(db, 'settings', 'store_config'));
+    if (settingsDoc.exists() && (settingsDoc.data() as any)?.hasBeenSeeded) {
+      return; // Already initialized; never overwrite admin edits or re-insert deleted items
+    }
+
     // 1. Products: verify and ensure baseline products exist
     const productsSnap = await getDocs(collection(db, 'products'));
     if (productsSnap.empty) {
       for (const p of INITIAL_PRODUCTS) {
-        await setDoc(doc(db, 'products', p.id), p, { merge: true });
+        await setDoc(doc(db, 'products', p.id), sanitizeForFirestore(p), { merge: true });
       }
     }
 
@@ -432,7 +437,7 @@ export async function seedInitialDatabaseIfEmpty(): Promise<void> {
     const categoriesSnap = await getDocs(collection(db, 'categories'));
     if (categoriesSnap.empty) {
       for (const c of INITIAL_CATEGORIES) {
-        await setDoc(doc(db, 'categories', c.id), c, { merge: true });
+        await setDoc(doc(db, 'categories', c.id), sanitizeForFirestore(c), { merge: true });
       }
     }
 
@@ -440,15 +445,15 @@ export async function seedInitialDatabaseIfEmpty(): Promise<void> {
     const bannersSnap = await getDocs(collection(db, 'banners'));
     if (bannersSnap.empty) {
       for (const b of INITIAL_BANNERS) {
-        await setDoc(doc(db, 'banners', b.id), b, { merge: true });
+        await setDoc(doc(db, 'banners', b.id), sanitizeForFirestore(b), { merge: true });
       }
     }
 
-    // 4. Settings: ensure store_config exists
-    const settingsDoc = await getDoc(doc(db, 'settings', 'store_config'));
-    if (!settingsDoc.exists()) {
-      await setDoc(doc(db, 'settings', 'store_config'), INITIAL_SETTINGS, { merge: true });
-    }
+    // 4. Settings: record that seed is complete
+    await setDoc(doc(db, 'settings', 'store_config'), sanitizeForFirestore({
+      ...INITIAL_SETTINGS,
+      hasBeenSeeded: true,
+    }), { merge: true });
   } catch (err) {
     console.debug('Database seed check complete.', err);
   }
