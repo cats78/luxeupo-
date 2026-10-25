@@ -278,10 +278,11 @@ export async function deleteBanner(bannerId: string): Promise<void> {
 export async function createCustomerOrder(orderData: Omit<Order, 'id' | 'createdAt'>): Promise<string> {
   const path = 'orders';
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const payload = sanitizeForFirestore({
       ...orderData,
       createdAt: new Date().toISOString()
     });
+    const docRef = await addDoc(collection(db, path), payload);
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);

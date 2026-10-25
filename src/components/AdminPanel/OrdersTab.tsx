@@ -366,7 +366,35 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
               </div>
               <div className="flex justify-between text-base font-bold text-[#121214] pt-2 border-t border-[#E8E2D9]">
                 <span>Final Order Total:</span>
-                <span>₹{activeOrder.total?.toLocaleString('en-IN')}</span>
+                <span className="text-[#9A7B4F]">₹{activeOrder.total?.toLocaleString('en-IN')}</span>
+              </div>
+
+              {/* Razorpay Transaction Details */}
+              <div className="pt-2 border-t border-[#E8E2D9] space-y-1 text-[11px] text-[#736D64]">
+                <div className="flex justify-between">
+                  <span>Payment Gateway / Method:</span>
+                  <span className="font-semibold text-[#121214]">{activeOrder.paymentMethod || 'Razorpay UPI & Cards'}</span>
+                </div>
+                {activeOrder.razorpayPaymentId && (
+                  <div className="flex justify-between">
+                    <span>Razorpay Payment ID:</span>
+                    <span className="font-mono text-[#121214] bg-white px-1.5 py-0.5 rounded border border-[#E8E2D9]">
+                      {activeOrder.razorpayPaymentId}
+                    </span>
+                  </div>
+                )}
+                {activeOrder.razorpayOrderId && (
+                  <div className="flex justify-between">
+                    <span>Razorpay Order ID:</span>
+                    <span className="font-mono text-[#736D64]">{activeOrder.razorpayOrderId}</span>
+                  </div>
+                )}
+                {activeOrder.paidAt && (
+                  <div className="flex justify-between">
+                    <span>Verified Timestamp:</span>
+                    <span>{new Date(activeOrder.paidAt).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
               </div>
             </div>
 

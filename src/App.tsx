@@ -28,7 +28,7 @@ import { CategoryShowcase } from './components/CategoryShowcase';
 import { FurnitureCatalog } from './components/FurnitureCatalog';
 import { ProductDetailView } from './components/ProductDetailView';
 import { CartDrawer } from './components/CartDrawer';
-import { PaymentNoticeModal } from './components/PaymentNoticeModal';
+import { RazorpayCheckoutModal } from './components/RazorpayCheckoutModal';
 import { SupportForm } from './components/SupportForm';
 import { Footer } from './components/Footer';
 
@@ -39,7 +39,7 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 function MainApp() {
   const { isAdmin, loading: authLoading } = useAuth();
   const { settings } = useSettings();
-  const { addToCart, isPaymentNoticeOpen, setIsPaymentNoticeOpen } = useCart();
+  const { addToCart, openCheckout } = useCart();
 
   // Firestore real-time state with instant baseline initialization
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
@@ -173,7 +173,7 @@ function MainApp() {
 
   const handleBuyNowFromProduct = (product: Product, quantity: number, color: string) => {
     addToCart(product, quantity, undefined, color, undefined);
-    setIsPaymentNoticeOpen(true);
+    openCheckout();
   };
 
   const activeProduct = activeProductId
@@ -264,11 +264,8 @@ function MainApp() {
           />
         </main>
 
-        <CartDrawer onOpenCheckout={() => setIsPaymentNoticeOpen(true)} />
-        <PaymentNoticeModal
-          isOpen={isPaymentNoticeOpen}
-          onClose={() => setIsPaymentNoticeOpen(false)}
-        />
+        <CartDrawer onOpenCheckout={openCheckout} />
+        <RazorpayCheckoutModal />
 
         <Footer
           categories={categories}
@@ -399,13 +396,10 @@ function MainApp() {
       </main>
 
       {/* Cart Drawer */}
-      <CartDrawer onOpenCheckout={() => setIsPaymentNoticeOpen(true)} />
+      <CartDrawer onOpenCheckout={openCheckout} />
 
-      {/* Payment Notice Modal (Online ordering disabled per requirement #8) */}
-      <PaymentNoticeModal
-        isOpen={isPaymentNoticeOpen}
-        onClose={() => setIsPaymentNoticeOpen(false)}
-      />
+      {/* Razorpay Online Checkout Modal */}
+      <RazorpayCheckoutModal />
 
       {/* Footer */}
       <Footer

@@ -81,6 +81,10 @@ export interface Order {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
+  paidAt?: string;
   createdAt: string;
   updatedAt?: string;
   userId?: string;
@@ -93,6 +97,8 @@ export interface Enquiry {
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
+  customerAddress?: string;
+  customerPinCode?: string;
   subject: string;
   message: string;
   status: EnquiryStatus;

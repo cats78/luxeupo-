@@ -17,6 +17,9 @@ interface CartContextType {
   isPaymentNoticeOpen: boolean;
   setIsPaymentNoticeOpen: (open: boolean) => void;
   openPaymentNotice: () => void;
+  isCheckoutOpen: boolean;
+  setIsCheckoutOpen: (open: boolean) => void;
+  openCheckout: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,9 +37,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPaymentNoticeOpen, setIsPaymentNoticeOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const openPaymentNotice = () => {
     setIsPaymentNoticeOpen(true);
+  };
+
+  const openCheckout = () => {
+    setIsCheckoutOpen(true);
+    setIsCartOpen(false);
   };
 
   useEffect(() => {
@@ -83,8 +92,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       ];
     });
-    // Requirement 8: After Add to Cart or payment interaction, display notice
-    setIsPaymentNoticeOpen(true);
+    // Open Cart Drawer to show items and proceed to Razorpay Checkout
+    setIsCartOpen(true);
   };
 
   const updateQuantity = (index: number, quantity: number) => {
@@ -129,7 +138,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsCartOpen,
         isPaymentNoticeOpen,
         setIsPaymentNoticeOpen,
-        openPaymentNotice
+        openPaymentNotice,
+        isCheckoutOpen,
+        setIsCheckoutOpen,
+        openCheckout
       }}
     >
       {children}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trash2, ShoppingBag, MessageCircle, Phone, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Trash2, ShoppingBag, MessageCircle, Phone, Sparkles, AlertCircle, Lock, ShieldCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 
@@ -9,7 +9,6 @@ interface CartDrawerProps {
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenCheckout }) => {
-  const handleOpenNotice = onOpenCheckout || onOpenNotice;
   const {
     items,
     isCartOpen,
@@ -18,9 +17,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
     removeFromCart,
     subtotal,
     deliveryFee,
-    total
+    total,
+    openCheckout
   } = useCart();
   const { settings } = useSettings();
+
+  const handleCheckoutClick = () => {
+    if (onOpenCheckout) {
+      onOpenCheckout();
+    } else {
+      openCheckout();
+    }
+  };
 
   if (!isCartOpen) return null;
 
@@ -173,27 +181,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenNotice, onOpenChec
                 </div>
               </div>
 
-              {/* Exact User Notice Box */}
-              <div className="p-3 bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl text-xs space-y-1">
-                <div className="font-medium text-[#1C1917] flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 text-[#B88E52]" />
-                  <span>Online Ordering Coming Soon</span>
-                </div>
-                <p className="text-[11px] text-[#78716C] leading-relaxed font-light">
-                  We’re creating a smooth shopping experience for you. Online ordering and payments will be available soon. No cash on delivery and no online payments for now.
-                </p>
-              </div>
-
-              {/* Proceed to Checkout Button */}
+              {/* Online Checkout Button (Razorpay) */}
               <button
                 type="button"
-                onClick={() => {
-                  if (handleOpenNotice) handleOpenNotice();
-                }}
-                className="w-full py-3 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
+                onClick={handleCheckoutClick}
+                className="w-full py-3.5 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-[0.14em] rounded-lg flex items-center justify-center gap-2 shadow-md transition-colors cursor-pointer"
               >
-                <span>Proceed to Checkout</span>
+                <Lock className="w-4 h-4" />
+                <span>Pay ₹ {total.toLocaleString('en-IN')} with Razorpay</span>
               </button>
+
+              {/* Informational Trust Badge */}
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#78716C]">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#B88E52]" />
+                <span>UPI • PhonePe • Google Pay • Cards • NetBanking</span>
+              </div>
 
               {/* Direct Concierge Contact Actions */}
               <div className="grid grid-cols-2 gap-2.5 pt-1">
