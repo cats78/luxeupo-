@@ -1,4 +1,4 @@
-import { createRazorpayOrderOnServer } from '../src/server/razorpayService';
+import { createRazorpayOrderOnServer } from './_razorpay';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

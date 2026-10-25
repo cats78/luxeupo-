@@ -61,11 +61,26 @@ export const RazorpayCheckoutModal: React.FC = () => {
 
   if (!isCheckoutOpen) return null;
 
-  // Dynamically loads the official Razorpay Checkout SDK
+  // Ensures official Razorpay Checkout SDK is loaded and ready
   const loadRazorpayScript = (): Promise<boolean> => {
     return new Promise((resolve) => {
       if (typeof window !== 'undefined' && window.Razorpay) {
         resolve(true);
+        return;
+      }
+      const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+      if (existing) {
+        let checks = 0;
+        const interval = setInterval(() => {
+          checks++;
+          if (typeof window !== 'undefined' && window.Razorpay) {
+            clearInterval(interval);
+            resolve(true);
+          } else if (checks > 30) {
+            clearInterval(interval);
+            resolve(false);
+          }
+        }, 100);
         return;
       }
       const script = document.createElement('script');
@@ -279,6 +294,10 @@ export const RazorpayCheckoutModal: React.FC = () => {
       });
 
       rzpInstance.open();
+      // Ensure the button state resets so it is not permanently stuck
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1200);
     } catch (err: any) {
       console.error('Razorpay Checkout initialization error:', err);
       setErrorMessage(err?.message || 'Could not initiate checkout. Please try again or reach our concierge.');
@@ -568,6 +587,14 @@ export const RazorpayCheckoutModal: React.FC = () => {
                 Razorpay Secured
               </span>
             </div>
+
+            {/* Error Notification (Bottom) */}
+            {errorMessage && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{errorMessage}</span>
+              </div>
+            )}
 
             {/* Pay Button */}
             <button

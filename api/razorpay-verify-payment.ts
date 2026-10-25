@@ -1,4 +1,4 @@
-import { verifyRazorpayPaymentSignature } from '../src/server/razorpayService';
+import { verifyRazorpayPaymentSignature } from './_razorpay';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

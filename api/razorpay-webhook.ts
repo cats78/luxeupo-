@@ -1,4 +1,4 @@
-import { verifyRazorpayWebhookSignature } from '../src/server/razorpayService';
+import { verifyRazorpayWebhookSignature } from './_razorpay';
 
 // Optional config for Vercel Serverless Function to keep raw stream if needed
 export const config = {
