@@ -163,12 +163,23 @@ export const RazorpayCheckoutModal: React.FC = () => {
         }),
       });
 
-      const orderData = await response.json();
+      const responseText = await response.text();
+      let orderData: any;
+      try {
+        orderData = JSON.parse(responseText);
+      } catch (parseErr) {
+        console.error('Non-JSON response from /api/razorpay-create-order:', responseText);
+        throw new Error(
+          response.status === 404
+            ? 'Order API route not found (404). Please ensure your latest Vercel build has finished deploying.'
+            : `Server Error (${response.status}): ${responseText.slice(0, 150) || 'Invalid server response.'}`
+        );
+      }
 
       if (!response.ok || !orderData.success) {
         throw new Error(
           orderData.message ||
-            'Could not initiate Razorpay order. If keys were recently added, make sure RAZORPAY_KEY_ID is active.'
+            'Could not initiate Razorpay order. Please ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set in Vercel.'
         );
       }
 
@@ -216,7 +227,14 @@ export const RazorpayCheckoutModal: React.FC = () => {
               }),
             });
 
-            const verifyData = await verifyRes.json();
+            const verifyText = await verifyRes.text();
+            let verifyData: any;
+            try {
+              verifyData = JSON.parse(verifyText);
+            } catch (pErr) {
+              console.error('Non-JSON response from /api/razorpay-verify-payment:', verifyText);
+              throw new Error(`Verification server error (${verifyRes.status}): ${verifyText.slice(0, 150)}`);
+            }
 
             if (!verifyRes.ok || !verifyData.verified) {
               throw new Error(
