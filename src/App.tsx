@@ -19,7 +19,8 @@ import {
   subscribeBanners,
   subscribeOrders,
   subscribeEnquiries,
-  seedInitialDatabaseIfEmpty
+  seedInitialDatabaseIfEmpty,
+  getProductById
 } from './firebase/firestore';
 
 import { Header } from './components/Header';
@@ -42,8 +43,21 @@ function MainApp() {
   const { settings } = useSettings();
   const { addToCart, openCheckout } = useCart();
 
-  // Firestore real-time state with instant baseline initialization
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  // Firestore real-time state with instant baseline + localStorage cache initialization
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const cached = localStorage.getItem('luxeupho_cached_products');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_PRODUCTS;
+  });
+  const [isProductsLoaded, setIsProductsLoaded] = useState<boolean>(false);
+  const [fetchingProduct, setFetchingProduct] = useState<boolean>(false);
+  const [singleProduct, setSingleProduct] = useState<Product | null>(null);
+
   const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
   const [banners, setBanners] = useState<Banner[]>(INITIAL_BANNERS);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -126,7 +140,13 @@ function MainApp() {
   useEffect(() => {
     seedInitialDatabaseIfEmpty();
 
-    const unsubProducts = subscribeProducts(setProducts);
+    const unsubProducts = subscribeProducts((prods) => {
+      setProducts(prods);
+      setIsProductsLoaded(true);
+      try {
+        localStorage.setItem('luxeupho_cached_products', JSON.stringify(prods));
+      } catch {}
+    });
     const unsubCategories = subscribeCategories(setCategories);
     const unsubBanners = subscribeBanners(setBanners);
 
@@ -201,9 +221,50 @@ function MainApp() {
     openCheckout();
   };
 
-  const activeProduct = activeProductId
-    ? products.find((p) => p.id === activeProductId)
-    : null;
+  const navigateToProduct = (productId: string) => {
+    window.history.pushState({}, '', `/product/${productId}`);
+    setCurrentRoute('product');
+    setActiveProductId(productId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Dedicated single product synchronization to immediately resolve direct links or fresh items
+  useEffect(() => {
+    if (!activeProductId) {
+      setSingleProduct(null);
+      return;
+    }
+    const found = products.find((p) => p.id === activeProductId);
+    if (found) {
+      setSingleProduct(found);
+      return;
+    }
+
+    let isSubscribed = true;
+    setFetchingProduct(true);
+    getProductById(activeProductId)
+      .then((p) => {
+        if (isSubscribed) {
+          if (p) {
+            setSingleProduct(p);
+          }
+          setFetchingProduct(false);
+        }
+      })
+      .catch(() => {
+        if (isSubscribed) {
+          setFetchingProduct(false);
+        }
+      });
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [activeProductId, products]);
+
+  const activeProduct =
+    (activeProductId ? products.find((p) => p.id === activeProductId) : null) ||
+    singleProduct;
 
   // ---------------- RENDER ADMIN ROUTE ---------------- //
   if (currentRoute === 'admin') {
@@ -235,6 +296,60 @@ function MainApp() {
 
   // ---------------- RENDER DEDICATED PRODUCT DETAILS ROUTE (Screen 4) ---------------- //
   if (currentRoute === 'product') {
+    // If product data is still synchronizing or single fetch in flight, show luxury placeholder skeleton
+    const isProductLoading = !activeProduct && (!isProductsLoaded || fetchingProduct);
+
+    if (isProductLoading) {
+      return (
+        <div className="min-h-screen bg-[#FAF8F5] flex flex-col justify-between">
+          <Header
+            currentTab={currentTab}
+            onNavigateTab={handleTabChange}
+            products={products}
+            wishlistCount={wishlist.length}
+            onOpenWishlist={() => handleTabChange('furniture')}
+          />
+          <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div className="flex items-center gap-2 mb-8 animate-pulse">
+              <div className="h-4 w-16 bg-[#E7E0D5]/70 rounded"></div>
+              <span className="text-[#A8A29E]">/</span>
+              <div className="h-4 w-24 bg-[#E7E0D5]/70 rounded"></div>
+              <span className="text-[#A8A29E]">/</span>
+              <div className="h-4 w-32 bg-[#E7E0D5]/70 rounded"></div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              <div className="lg:col-span-7 flex flex-col gap-4 animate-pulse">
+                <div className="aspect-[4/3] w-full rounded-2xl bg-[#EFEAE2] flex items-center justify-center relative overflow-hidden border border-[#E7E0D5]/60 shadow-sm">
+                  <div className="w-10 h-10 rounded-full border-2 border-[#B88E52]/40 border-t-[#B88E52] animate-spin"></div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-20 h-20 rounded-xl bg-[#EFEAE2] border border-[#E7E0D5]/60"></div>
+                  <div className="w-20 h-20 rounded-xl bg-[#EFEAE2] border border-[#E7E0D5]/60"></div>
+                  <div className="w-20 h-20 rounded-xl bg-[#EFEAE2] border border-[#E7E0D5]/60"></div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-5 flex flex-col space-y-6 animate-pulse">
+                <div className="space-y-3">
+                  <div className="h-3 w-28 bg-[#B88E52]/30 rounded uppercase tracking-wider"></div>
+                  <div className="h-8 w-3/4 bg-[#E7E0D5] rounded-md"></div>
+                  <div className="h-6 w-32 bg-[#B88E52]/20 rounded-md"></div>
+                </div>
+                <div className="h-24 w-full bg-[#EFEAE2] rounded-xl border border-[#E7E0D5]/40"></div>
+                <div className="h-12 w-full bg-[#B88E52]/40 rounded-xl"></div>
+                <div className="h-12 w-full bg-[#E7E0D5] rounded-xl"></div>
+              </div>
+            </div>
+          </main>
+          <Footer
+            categories={categories}
+            onSelectCategory={handleSelectCategoryFromOther}
+          />
+        </div>
+      );
+    }
+
     if (!activeProduct) {
       return (
         <div className="min-h-screen bg-[#FAF8F5] flex flex-col justify-between">
@@ -344,6 +459,7 @@ function MainApp() {
               onToggleWishlist={toggleWishlist}
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
+              onSelectProduct={navigateToProduct}
             />
 
             {/* Customer Care & Consultation Section */}
@@ -361,6 +477,7 @@ function MainApp() {
               onToggleWishlist={toggleWishlist}
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
+              onSelectProduct={navigateToProduct}
             />
           </div>
         )}

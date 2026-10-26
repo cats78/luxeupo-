@@ -9,6 +9,7 @@ interface FurnitureCatalogProps {
   onToggleWishlist: (productId: string) => void;
   selectedCategory: string;
   onSelectCategory: (cat: string) => void;
+  onSelectProduct?: (productId: string) => void;
 }
 
 export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
@@ -18,6 +19,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
   onToggleWishlist,
   selectedCategory,
   onSelectCategory,
+  onSelectProduct,
 }) => {
   const [categoryOpen, setCategoryOpen] = useState(true);
 
@@ -264,6 +266,16 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
                   const isWishlisted = wishlist.includes(product.id);
                   const productUrl = `/product/${product.id}`;
 
+                  const handleLinkClick = (e: React.MouseEvent) => {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) {
+                      return;
+                    }
+                    if (onSelectProduct) {
+                      e.preventDefault();
+                      onSelectProduct(product.id);
+                    }
+                  };
+
                   return (
                     <div
                       key={product.id}
@@ -272,10 +284,9 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
                       {/* Product Image Container */}
                       <a
                         href={productUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        onClick={handleLinkClick}
                         className="relative block aspect-[4/3] bg-[#FAF8F5] overflow-hidden cursor-pointer"
-                        title={`Open ${product.name} details in new tab`}
+                        title={`View ${product.name} details`}
                       >
                         <img
                           src={product.images[0]}
@@ -306,8 +317,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
                       <div className="p-4">
                         <a
                           href={productUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          onClick={handleLinkClick}
                           className="block text-sm font-normal text-[#1C1917] group-hover:text-[#B88E52] transition-colors mb-1 truncate"
                         >
                           {product.name}

@@ -179,6 +179,22 @@ export async function deleteProduct(productId: string): Promise<void> {
   }
 }
 
+export async function getProductById(productId: string): Promise<Product | null> {
+  const path = 'products';
+  try {
+    const docRef = doc(db, path, productId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { id: snap.id, ...snap.data() } as Product;
+    }
+    const fallback = INITIAL_PRODUCTS.find((p) => p.id === productId);
+    return fallback || null;
+  } catch (error) {
+    console.warn('getProductById error, checking fallback:', error);
+    return INITIAL_PRODUCTS.find((p) => p.id === productId) || null;
+  }
+}
+
 // ---------------- CATEGORIES ---------------- //
 
 export function subscribeCategories(
