@@ -47,9 +47,7 @@ service cloud.firestore {
       allow read, update, delete: if true;
     }
 
-    // Enquiries collection:
-    // Customer consultations and support requests saving name, phone number, and message.
-    // Real-time notifications for admin suite.
+    // Enquiries collection
     match /enquiries/{enquiryId} {
       allow create: if incoming().customerName is string &&
                        incoming().customerName.size() > 0 &&
@@ -58,6 +56,12 @@ service cloud.firestore {
                        incoming().message is string &&
                        incoming().message.size() > 0;
       allow read, update, delete: if true;
+    }
+
+    // Reels collection: Instagram reels showcase and live admin sync
+    match /reels/{reelId} {
+      allow read: if true;
+      allow write: if true;
     }
 
     // Admins collection: managed by system

@@ -11,12 +11,13 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { CartProvider, useCart } from './context/CartContext';
 
-import { Product, Category, Banner, Order, Enquiry } from './types';
-import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_BANNERS } from './data/initialData';
+import { Product, Category, Banner, Order, Enquiry, InstagramReel } from './types';
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_BANNERS, INITIAL_REELS } from './data/initialData';
 import {
   subscribeProducts,
   subscribeCategories,
   subscribeBanners,
+  subscribeReels,
   subscribeOrders,
   subscribeEnquiries,
   seedInitialDatabaseIfEmpty,
@@ -27,6 +28,7 @@ import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { CategoryShowcase } from './components/CategoryShowcase';
 import { FurnitureCatalog } from './components/FurnitureCatalog';
+import { InstagramReelsSection } from './components/InstagramReelsSection';
 import { ProductDetailView } from './components/ProductDetailView';
 import { CartDrawer } from './components/CartDrawer';
 import { RazorpayCheckoutModal } from './components/RazorpayCheckoutModal';
@@ -60,6 +62,7 @@ function MainApp() {
 
   const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
   const [banners, setBanners] = useState<Banner[]>(INITIAL_BANNERS);
+  const [reels, setReels] = useState<InstagramReel[]>(INITIAL_REELS);
   const [orders, setOrders] = useState<Order[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
 
@@ -149,11 +152,13 @@ function MainApp() {
     });
     const unsubCategories = subscribeCategories(setCategories);
     const unsubBanners = subscribeBanners(setBanners);
+    const unsubReels = subscribeReels(setReels);
 
     return () => {
       unsubProducts();
       unsubCategories();
       unsubBanners();
+      unsubReels();
     };
   }, []);
 
@@ -287,6 +292,7 @@ function MainApp() {
         products={products}
         categories={categories}
         banners={banners}
+        reels={reels}
         orders={orders}
         enquiries={enquiries}
         onBackToStore={navigateToHome}
@@ -460,6 +466,13 @@ function MainApp() {
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               onSelectProduct={navigateToProduct}
+            />
+
+            {/* Official Instagram Reels Showcase (Directly above the enquiries section) */}
+            <InstagramReelsSection
+              reels={reels}
+              instagramUrl="https://www.instagram.com/luxeupho_shops/"
+              instagramHandle="luxeupho_shops"
             />
 
             {/* Customer Care & Consultation Section */}

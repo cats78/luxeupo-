@@ -127,3 +127,19 @@ export interface StoreSettings {
   razorpayWebhookSecret?: string;
   paymentsEnabled?: boolean;
 }
+
+export interface InstagramReel {
+  id: string;
+  title: string;
+  caption?: string;
+  instagramUrl: string; // e.g. https://www.instagram.com/luxeupho_shops/ or direct reel link
+  videoUrl?: string; // direct mp4/webm stream for instant high-fps playback
+  thumbnailUrl: string;
+  likes?: string;
+  views?: string;
+  duration?: string;
+  badge?: string; // e.g. "NEW REEL", "ATELIER", "CRAFT"
+  sortOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+}

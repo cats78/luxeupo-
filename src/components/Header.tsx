@@ -99,8 +99,8 @@ export const Header: React.FC<HeaderProps> = ({
                   opacity: 1,
                   imageRendering: 'auto',
                 }}
-                onError={() => {
-                  console.error('Unable to load the LEXUPHO logo.');
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png';
                 }}
               />
 

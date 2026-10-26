@@ -23,7 +23,7 @@ const BRANCH_2_MAPS_URL =
   'https://www.google.com/maps/search/?api=1&query=H.No+172+Street+7+Al+Hasnath+Colony+Tolichowki+Hyderabad+Telangana+500008';
 
 const INSTAGRAM_URL =
-  'https://www.instagram.com/luxeupho_homeinteriors/';
+  'https://www.instagram.com/luxeupho_shops/';
 
 const YOUTUBE_URL =
   'https://www.youtube.com/@LuxeuphoHomes';

@@ -1,4 +1,4 @@
-import { Product, Category, Banner, StoreSettings } from '../types';
+import { Product, Category, Banner, StoreSettings, InstagramReel } from '../types';
 
 export const INITIAL_SETTINGS: StoreSettings = {
   logoUrl: 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png',
@@ -231,3 +231,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     createdAt: '2026-03-06T10:00:00.000Z'
   }
 ];
+
+export const INITIAL_REELS: InstagramReel[] = [];
+

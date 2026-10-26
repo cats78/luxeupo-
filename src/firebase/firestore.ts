@@ -13,8 +13,8 @@ import {
   Unsubscribe
 } from 'firebase/firestore';
 import { db, auth } from './config';
-import { Product, Category, Banner, Order, Enquiry, StoreSettings } from '../types';
-import { INITIAL_BANNERS, INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_SETTINGS } from '../data/initialData';
+import { Product, Category, Banner, Order, Enquiry, StoreSettings, InstagramReel } from '../types';
+import { INITIAL_BANNERS, INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_SETTINGS, INITIAL_REELS } from '../data/initialData';
 
 export enum OperationType {
   CREATE = 'create',
@@ -290,6 +290,72 @@ export async function deleteBanner(bannerId: string): Promise<void> {
   }
 }
 
+// ---------------- INSTAGRAM REELS ---------------- //
+
+export function subscribeReels(
+  onSuccess: (reels: InstagramReel[]) => void,
+  onError?: (error: Error) => void
+): Unsubscribe {
+  const path = 'reels';
+  const demoIds = new Set(['reel-1', 'reel-2', 'reel-3', 'reel-4', 'reel-5']);
+  return onSnapshot(
+    collection(db, path),
+    (snapshot) => {
+      const items = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() } as InstagramReel))
+        .filter(r => !demoIds.has(r.id));
+      items.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+      onSuccess(items);
+    },
+    (error) => {
+      console.warn('Firestore reels subscribe error, using fallback', error);
+      onSuccess([]);
+      if (onError) onError(error);
+    }
+  );
+}
+
+export async function saveReel(reel: Partial<InstagramReel> & { id?: string }): Promise<string> {
+  const path = 'reels';
+  const now = new Date().toISOString();
+  const reelId = reel.id || doc(collection(db, path)).id;
+  const docRef = doc(db, path, reelId);
+
+  const cleanData: InstagramReel = {
+    id: reelId,
+    title: reel.title || 'LEXUPHO Atelier Reel',
+    caption: reel.caption || '',
+    instagramUrl: reel.instagramUrl || 'https://www.instagram.com/luxeupho_shops/',
+    videoUrl: reel.videoUrl || '',
+    thumbnailUrl: reel.thumbnailUrl || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=85',
+    likes: reel.likes || '1.2K',
+    views: reel.views || '10.5K',
+    duration: reel.duration || '0:15',
+    badge: reel.badge || 'NEW REEL',
+    sortOrder: typeof reel.sortOrder === 'number' ? reel.sortOrder : 1,
+    isActive: reel.isActive !== false,
+    createdAt: reel.createdAt || now,
+  };
+
+  try {
+    const payload = sanitizeForFirestore(cleanData);
+    await setDoc(docRef, payload, { merge: true });
+    return reelId;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `reels/${reelId}`);
+    throw error;
+  }
+}
+
+export async function deleteReel(reelId: string): Promise<void> {
+  const path = `reels/${reelId}`;
+  try {
+    await deleteDoc(doc(db, 'reels', reelId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
 // ---------------- ORDERS ---------------- //
 
 export async function createCustomerOrder(orderData: Omit<Order, 'id' | 'createdAt'>): Promise<string> {
@@ -466,7 +532,15 @@ export async function seedInitialDatabaseIfEmpty(): Promise<void> {
       }
     }
 
-    // 4. Settings: record that seed is complete
+    // 4. Reels: Remove any placeholder demo reels so only real uploaded reels show
+    const demoReelIds = ['reel-1', 'reel-2', 'reel-3', 'reel-4', 'reel-5'];
+    for (const dId of demoReelIds) {
+      try {
+        await deleteDoc(doc(db, 'reels', dId));
+      } catch {}
+    }
+
+    // 5. Settings: record that seed is complete
     await setDoc(doc(db, 'settings', 'store_config'), sanitizeForFirestore({
       ...INITIAL_SETTINGS,
       hasBeenSeeded: true,
@@ -475,3 +549,4 @@ export async function seedInitialDatabaseIfEmpty(): Promise<void> {
     console.debug('Database seed check complete.', err);
   }
 }
+

@@ -14,16 +14,18 @@ import {
   ShieldCheck,
   Check,
   Menu,
-  X
+  X,
+  Video
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
-import { Product, Category, Banner, Order, Enquiry } from '../../types';
+import { Product, Category, Banner, Order, Enquiry, InstagramReel } from '../../types';
 
 import { DashboardTab } from './DashboardTab';
 import { ProductsTab } from './ProductsTab';
 import { CategoriesTab } from './CategoriesTab';
 import { BannersTab } from './BannersTab';
+import { ReelsTab } from './ReelsTab';
 import { OrdersTab } from './OrdersTab';
 import { EnquiriesTab } from './EnquiriesTab';
 import { SettingsTab } from './SettingsTab';
@@ -32,6 +34,7 @@ interface AdminLayoutProps {
   products: Product[];
   categories: Category[];
   banners: Banner[];
+  reels: InstagramReel[];
   orders: Order[];
   enquiries: Enquiry[];
   onBackToStore: () => void;
@@ -41,6 +44,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   products,
   categories,
   banners,
+  reels,
   orders,
   enquiries,
   onBackToStore
@@ -49,7 +53,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { settings } = useSettings();
 
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'products' | 'categories' | 'banners' | 'orders' | 'enquiries' | 'settings'
+    'dashboard' | 'products' | 'categories' | 'banners' | 'reels' | 'orders' | 'enquiries' | 'settings'
   >('dashboard');
 
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -112,6 +116,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'products', label: 'Products', icon: Package, count: products.length },
     { id: 'categories', label: 'Categories', icon: Layers, count: categories.length },
     { id: 'banners', label: 'Banner Slider', icon: ImageIcon, count: banners.length },
+    { id: 'reels', label: 'Instagram Reels', icon: Video, count: reels.length },
     { id: 'orders', label: 'Orders', icon: ShoppingBag, count: pendingOrdersCount, alert: pendingOrdersCount > 0 },
     { id: 'enquiries', label: 'Enquiries', icon: MessageSquare, count: unreadEnquiriesCount, alert: unreadEnquiriesCount > 0 },
     { id: 'settings', label: 'Storefront Settings', icon: Settings },
@@ -435,6 +440,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
           {activeTab === 'banners' && (
             <BannersTab banners={banners} />
+          )}
+
+          {activeTab === 'reels' && (
+            <ReelsTab reels={reels} />
           )}
 
           {activeTab === 'orders' && (
