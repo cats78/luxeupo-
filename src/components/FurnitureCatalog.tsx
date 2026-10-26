@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Heart, ChevronDown, ChevronUp } from 'lucide-react';
-import { Product } from '../types';
+import { Product, Category } from '../types';
 
 interface FurnitureCatalogProps {
   products: Product[];
+  categories?: Category[];
   wishlist: string[];
   onToggleWishlist: (productId: string) => void;
   selectedCategory: string;
@@ -12,17 +13,33 @@ interface FurnitureCatalogProps {
 
 export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
   products,
+  categories = [],
   wishlist,
   onToggleWishlist,
   selectedCategory,
   onSelectCategory,
 }) => {
   const [categoryOpen, setCategoryOpen] = useState(true);
-  const [maxPrice, setMaxPrice] = useState<number>(50000);
+
+  // Dynamically calculate highest product price to never hide products by default
+  const ceilingPrice = Math.max(
+    300000,
+    ...products.map((p) => Number(p.price) || 0)
+  );
+
+  const [maxPrice, setMaxPrice] = useState<number>(ceilingPrice);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'newest'>('featured');
 
-  const categoriesList = ['Sofas', 'Beds', 'Dining', 'Storage', 'Chairs'];
+  // Build dynamic, comprehensive categories list
+  const baseCategories = ['Sofas', 'Beds', 'Dining', 'Storage', 'Chairs'];
+  const categoriesList = Array.from(
+    new Set([
+      ...baseCategories,
+      ...categories.map((c) => c.name),
+      ...products.map((p) => p.category).filter(Boolean),
+    ])
+  );
 
   const colorSwatches = [
     { name: 'Cream', hex: '#EBE5DA' },
@@ -32,23 +49,37 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
   ];
 
   const handleCategoryCheckbox = (catName: string) => {
-    if (selectedCategory === catName) {
+    if (selectedCategory.toLowerCase() === catName.toLowerCase()) {
       onSelectCategory('All');
     } else {
       onSelectCategory(catName);
     }
   };
 
+  const matchesCategory = (prodCat: string, selCat: string) => {
+    if (!selCat || selCat === 'All') return true;
+    if (!prodCat) return false;
+    const p = prodCat.trim().toLowerCase();
+    const s = selCat.trim().toLowerCase();
+    if (p === s) return true;
+    if (p.includes(s) || s.includes(p)) return true;
+    const pStem = p.replace(/s$/, '');
+    const sStem = s.replace(/s$/, '');
+    return pStem === sStem;
+  };
+
   const filteredProducts = products
     .filter((p) => {
-      if (selectedCategory !== 'All' && p.category !== selectedCategory) {
+      if (!matchesCategory(p.category, selectedCategory)) {
         return false;
       }
-      if (p.price > maxPrice) {
+      if (maxPrice < ceilingPrice && p.price > maxPrice) {
         return false;
       }
       if (selectedColor && p.colors) {
-        const matches = p.colors.some(c => c.toLowerCase().includes(selectedColor.toLowerCase()));
+        const matches = p.colors.some((c) =>
+          c.toLowerCase().includes(selectedColor.toLowerCase())
+        );
         if (!matches) return false;
       }
       return true;
@@ -56,24 +87,41 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
     .sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
-      if (sortBy === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      if (sortBy === 'newest')
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
     });
 
   return (
-    <section id="furniture-section" className="w-full bg-[#FAF8F5] py-12 sm:py-16">
+    <section id="furniture-section" className="w-full bg-[#FAF8F5] py-12 sm:py-16 scroll-mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Sidebar: Filter Panel */}
           <div className="lg:col-span-3 bg-white rounded-xl border border-[#E7E5E4] p-6 shadow-sm space-y-6">
-            <h3 className="text-base font-medium text-[#1C1917] pb-2 border-b border-[#F5F5F4] tracking-wide">
-              Filter
-            </h3>
+            <div className="flex items-center justify-between pb-2 border-b border-[#F5F5F4]">
+              <h3 className="text-base font-medium text-[#1C1917] tracking-wide">
+                Filter
+              </h3>
+              {(selectedCategory !== 'All' || selectedColor !== null || maxPrice < ceilingPrice) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectCategory('All');
+                    setSelectedColor(null);
+                    setMaxPrice(ceilingPrice);
+                  }}
+                  className="text-xs text-[#B88E52] hover:underline font-normal"
+                >
+                  Reset all
+                </button>
+              )}
+            </div>
 
             {/* Category Collapsible Checkboxes */}
             <div className="space-y-3">
               <button
+                type="button"
                 onClick={() => setCategoryOpen(!categoryOpen)}
                 className="w-full flex items-center justify-between text-sm font-medium text-[#1C1917]"
               >
@@ -84,7 +132,7 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
               {categoryOpen && (
                 <div className="space-y-2.5 pt-1">
                   {categoriesList.map((cat) => {
-                    const isChecked = selectedCategory === cat;
+                    const isChecked = matchesCategory(cat, selectedCategory);
                     return (
                       <label
                         key={cat}
@@ -106,21 +154,36 @@ export const FurnitureCatalog: React.FC<FurnitureCatalogProps> = ({
 
             {/* Price Range Slider */}
             <div className="space-y-3 pt-4 border-t border-[#F5F5F4]">
-              <span className="block text-sm font-medium text-[#1C1917]">
-                Price Range
-              </span>
+              <div className="flex justify-between items-center">
+                <span className="block text-sm font-medium text-[#1C1917]">
+                  Price Range
+                </span>
+                {maxPrice < ceilingPrice && (
+                  <button
+                    type="button"
+                    onClick={() => setMaxPrice(ceilingPrice)}
+                    className="text-xs text-[#B88E52] hover:underline"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
               <input
                 type="range"
                 min={5000}
-                max={50000}
-                step={1000}
+                max={ceilingPrice}
+                step={5000}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full accent-[#B88E52] h-1.5 bg-[#E7E5E4] rounded-lg cursor-pointer"
               />
               <div className="flex justify-between text-xs text-[#78716C] font-normal">
                 <span>₹5,000</span>
-                <span>₹{maxPrice.toLocaleString('en-IN')}</span>
+                <span>
+                  {maxPrice >= ceilingPrice
+                    ? 'All Prices'
+                    : `Up to ₹${maxPrice.toLocaleString('en-IN')}`}
+                </span>
               </div>
             </div>
 

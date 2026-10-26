@@ -143,10 +143,11 @@ export async function saveProduct(product: Partial<Product> & { id?: string }): 
     description: product.description || '',
     price: Number(product.price) || 0,
     originalPrice: Number(product.originalPrice) || Number(product.price) || 0,
-    discountPercent: Number(product.discountPercent) || 0,
-    images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [
-      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85'
-    ],
+    images: Array.isArray(product.images) && product.images.length > 0
+      ? Array.from(new Set(product.images.filter(Boolean)))
+      : [
+        'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85'
+      ],
     materials: Array.isArray(product.materials) ? product.materials : [],
     colors: Array.isArray(product.colors) ? product.colors : [],
     sizes: Array.isArray(product.sizes) ? product.sizes : [],

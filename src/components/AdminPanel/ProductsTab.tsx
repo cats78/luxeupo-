@@ -70,7 +70,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     setStock(5);
     setInStock(true);
     setIsFeatured(false);
-    setImages(['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85']);
+    setImages([]);
     setMaterialsInput('Italian Bouclé, Hardwood Frame, Champagne Brass Plinth');
     setColorsInput('Oatmeal Cream, Midnight Charcoal, Emerald');
     setSizesInput('Standard (92" x 40"), Grand (108" x 44")');
@@ -89,7 +89,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     setStock(prod.stock);
     setInStock(prod.inStock);
     setIsFeatured(prod.isFeatured);
-    setImages(prod.images || []);
+    setImages(Array.from(new Set((prod.images || []).filter(Boolean))));
     setMaterialsInput(prod.materials?.join(', ') || '');
     setColorsInput(prod.colors?.join(', ') || '');
     setSizesInput(prod.sizes?.join(', ') || '');
@@ -192,7 +192,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
         stock: Number(stock) || 0,
         inStock: Boolean(inStock),
         isFeatured: Boolean(isFeatured),
-        images: images,
+        images: Array.from(new Set(images.filter(Boolean))),
         materials: materialsInput.split(',').map(s => s.trim()).filter(Boolean),
         colors: colorsInput.split(',').map(s => s.trim()).filter(Boolean),
         sizes: sizesInput.split(',').map(s => s.trim()).filter(Boolean),

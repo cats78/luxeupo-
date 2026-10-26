@@ -12,7 +12,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
   onSelectCategory,
 }) => {
   return (
-    <section className="w-full bg-[#FAF8F5] py-12 sm:py-16">
+    <section id="categories-section" className="w-full bg-[#FAF8F5] py-12 sm:py-16 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Top Header Card with Ambient Backdrop (matching top-right reference image) */}
@@ -40,8 +40,16 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
           {categories.slice(0, 5).map((cat) => (
             <div
               key={cat.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelectCategory(cat.name)}
-              className="group bg-white rounded-xl border border-[#E7E5E4] p-4 text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-[#B88E52]/60 flex flex-col items-center justify-between"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectCategory(cat.name);
+                }
+              }}
+              className="group bg-white rounded-xl border border-[#E7E5E4] p-4 text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-[#B88E52]/60 flex flex-col items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#B88E52]"
             >
               <div className="w-full aspect-[4/3] rounded-lg overflow-hidden bg-[#FAF8F5] mb-4 flex items-center justify-center">
                 <img

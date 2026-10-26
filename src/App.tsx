@@ -35,6 +35,7 @@ import { Footer } from './components/Footer';
 import { AdminLayout } from './components/AdminPanel/AdminLayout';
 import { AdminLogin } from './components/AdminPanel/AdminLogin';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { NeroChatbot } from './components/NeroChatbot';
 
 function MainApp() {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -171,6 +172,30 @@ function MainApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleSelectCategoryFromHome = (catName: string) => {
+    const normalized = typeof catName === 'object' && catName ? (catName as any).name : String(catName);
+    setSelectedCategory(normalized);
+    // Smooth scroll directly to the furniture catalog
+    const el = document.getElementById('furniture-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      setCurrentTab('furniture');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSelectCategoryFromOther = (catName: string) => {
+    const normalized = typeof catName === 'object' && catName ? (catName as any).name : String(catName);
+    setSelectedCategory(normalized);
+    if (currentRoute !== 'home') {
+      window.history.pushState({}, '', '/');
+      setCurrentRoute('home');
+    }
+    setCurrentTab('furniture');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleBuyNowFromProduct = (product: Product, quantity: number, color: string) => {
     addToCart(product, quantity, undefined, color, undefined);
     openCheckout();
@@ -270,12 +295,9 @@ function MainApp() {
 
         <Footer
           categories={categories}
-          onSelectCategory={(cat: any) => {
-            const categoryName = typeof cat === 'object' && cat ? cat.name : String(cat);
-            setSelectedCategory(categoryName);
-            handleTabChange('furniture');
-          }}
+          onSelectCategory={handleSelectCategoryFromOther}
         />
+        <NeroChatbot products={products} />
         <FloatingWhatsApp />
       </div>
     );
@@ -311,15 +333,13 @@ function MainApp() {
             {/* Screen 2: "Shop by Category" & "Furniture for Every Space" Banner */}
             <CategoryShowcase
               categories={categories}
-              onSelectCategory={(catName) => {
-                setSelectedCategory(catName);
-                setCurrentTab('furniture');
-              }}
+              onSelectCategory={handleSelectCategoryFromHome}
             />
 
             {/* Screen 3: "Our Furniture" Catalog with Filter Sidebar */}
             <FurnitureCatalog
               products={products}
+              categories={categories}
               wishlist={wishlist}
               onToggleWishlist={toggleWishlist}
               selectedCategory={selectedCategory}
@@ -336,6 +356,7 @@ function MainApp() {
           <div className="py-6">
             <FurnitureCatalog
               products={products}
+              categories={categories}
               wishlist={wishlist}
               onToggleWishlist={toggleWishlist}
               selectedCategory={selectedCategory}
@@ -349,10 +370,7 @@ function MainApp() {
           <div className="py-6">
             <CategoryShowcase
               categories={categories}
-              onSelectCategory={(catName) => {
-                setSelectedCategory(catName);
-                setCurrentTab('furniture');
-              }}
+              onSelectCategory={handleSelectCategoryFromOther}
             />
           </div>
         )}
@@ -362,13 +380,13 @@ function MainApp() {
           <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
             <div className="bg-white rounded-2xl border border-[#E7E5E4] p-8 sm:p-12 shadow-sm">
               <span className="text-xs uppercase tracking-[0.25em] text-[#B88E52] font-normal block mb-2 font-sans">
-                About LUXEUPHO
+                About LEXUPHO
               </span>
               <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#1C1917] mb-4 tracking-wide">
                 Curating Timeless Modern Sanctuaries
               </h1>
               <p className="text-sm sm:text-base text-[#57534E] leading-relaxed max-w-2xl font-light">
-                LUXEUPHO was founded on a singular premise: furniture should be as enduring as the memories made around it. Every sofa, bed, dining set, and cabinet in our collection is precision-crafted with seasoned hardwoods, bookmatched veneers, and premium woven textiles.
+                LEXUPHO was founded on a singular premise: furniture should be as enduring as the memories made around it. Every sofa, bed, dining set, and cabinet in our collection is precision-crafted with seasoned hardwoods, bookmatched veneers, and premium woven textiles.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-8 mt-8 border-t border-[#F5F5F4]">
@@ -410,12 +428,11 @@ function MainApp() {
       {/* Footer */}
       <Footer
         categories={categories}
-        onSelectCategory={(catName: any) => {
-          const categoryName = typeof catName === 'object' && catName ? catName.name : String(catName);
-          setSelectedCategory(categoryName);
-          setCurrentTab('furniture');
-        }}
+        onSelectCategory={handleSelectCategoryFromOther}
       />
+
+      {/* Floating NERO Shopping Assistant (Above WhatsApp) */}
+      <NeroChatbot products={products} />
 
       {/* Floating WhatsApp Contact Button (Customer Care: 9704796170) */}
       <FloatingWhatsApp />

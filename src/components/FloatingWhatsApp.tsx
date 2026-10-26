@@ -10,7 +10,7 @@ export const FloatingWhatsApp: React.FC = () => {
   const rawNumber = settings.phone ? settings.phone.replace(/\D/g, '') : '9704796170';
   const cleanNumber = rawNumber.length === 10 ? `91${rawNumber}` : rawNumber;
   const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(
-    'Hello LUXEUPHO, I would like to enquire about your luxury furniture and home interior collections.'
+    'Hello LEXUPHO, I would like to enquire about your luxury furniture and home interior collections.'
   )}`;
 
   return (
@@ -32,7 +32,7 @@ export const FloatingWhatsApp: React.FC = () => {
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        aria-label="Contact LUXEUPHO on WhatsApp: 9704796170"
+        aria-label="Contact LEXUPHO on WhatsApp: 9704796170"
         className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#25D366]/40 group relative"
       >
         {/* Subtle Luxury Outer Ring Pulse */}

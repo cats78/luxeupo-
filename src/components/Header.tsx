@@ -83,11 +83,11 @@ export const Header: React.FC<HeaderProps> = ({
                 setMobileMenuOpen(false);
               }}
               className="group flex min-w-0 items-center gap-2.5 sm:gap-3.5 lg:gap-4 text-left focus:outline-none"
-              aria-label="LUXEUPHO Home"
+              aria-label="LEXUPHO Home"
             >
               <img
                 src={LOGO_URL}
-                alt="LUXEUPHO Gold House Emblem"
+                alt="LEXUPHO Gold House Emblem"
                 width={240}
                 height={240}
                 loading="eager"
@@ -100,13 +100,13 @@ export const Header: React.FC<HeaderProps> = ({
                   imageRendering: 'auto',
                 }}
                 onError={() => {
-                  console.error('Unable to load the LUXEUPHO logo.');
+                  console.error('Unable to load the LEXUPHO logo.');
                 }}
               />
 
               <div className="flex min-w-0 flex-col justify-center leading-none my-auto">
-                <span className="font-brand whitespace-nowrap text-[18px] min-[380px]:text-[21px] sm:text-[25px] lg:text-[28px] font-normal leading-tight tracking-[0.12em] sm:tracking-[0.16em] lg:tracking-[0.18em] text-[#B88E52] transition-colors duration-200 group-hover:text-[#9D753C]">
-                  LUXEUPHO
+                <span className="font-brand whitespace-nowrap text-[18px] min-[380px]:text-[21px] sm:text-[25px] lg:text-[28px] font-medium leading-tight tracking-[0.12em] sm:tracking-[0.16em] lg:tracking-[0.18em] text-[#B88E52] transition-colors duration-200 group-hover:text-[#9D753C]">
+                  LEXUPHO
                 </span>
 
                 <span className="whitespace-nowrap text-[8px] min-[380px]:text-[8.5px] sm:text-[9.5px] lg:text-[10px] font-normal uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#78716C] leading-normal mt-0.5 sm:mt-1 block">

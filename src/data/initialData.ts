@@ -6,7 +6,7 @@ export const INITIAL_SETTINGS: StoreSettings = {
   email: 'luxeuphohomeinteriors@gmail.com',
   announcement: 'COMPLIMENTARY ARCHITECTURAL DESIGN CONSULTATION & WHITE-GLOVE PAN-INDIA INSTALLATION',
   freeShippingMin: 25000,
-  address: 'LUXEUPHO Flagship Gallery, High Street Luxury Boulevard',
+  address: 'LEXUPHO Flagship Gallery, High Street Luxury Boulevard',
 };
 
 export const INITIAL_BANNERS: Banner[] = [

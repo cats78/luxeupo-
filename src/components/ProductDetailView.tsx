@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ShoppingBag,
   Zap,
@@ -8,7 +8,9 @@ import {
   CreditCard,
   RotateCcw,
   ArrowLeft,
-  Check
+  Check,
+  Box,
+  Maximize2
 } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
@@ -29,6 +31,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [addedAnimation, setAddedAnimation] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // 3D Perspective Tilt state
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, lightX: 50, lightY: 50, isHovered: false });
 
   // 4 Color Swatches matching reference image
   const colorOptions = [
@@ -38,19 +45,48 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     { name: 'Forest', hex: '#4F5E4D' },
   ];
 
-  const images = product.images && product.images.length > 0
-    ? product.images
-    : ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85'];
+  // Exactly the uploaded images, deduplicated, without artificial 4-image padding
+  const rawImages = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
+  const images = Array.from(new Set(rawImages));
+  if (images.length === 0) {
+    images.push('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85');
+  }
 
-  // Pad or slice to have 4 thumbnails as in reference image
-  const displayThumbnails = [
-    images[0] || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=85',
-    images[1] || 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=85',
-    images[2] || 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=600&q=85',
-    images[3] || 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=85',
-  ];
+  const currentImage = images[activeImageIndex] || images[0];
 
-  const currentImage = displayThumbnails[activeImageIndex] || displayThumbnails[0];
+  // Interactive 3D Perspective Physics
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageContainerRef.current) return;
+    const rect = imageContainerRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({
+      rotateY: x * 16, // max 8 deg left/right
+      rotateX: -y * 16, // max 8 deg up/down
+      lightX: (x + 0.5) * 100,
+      lightY: (y + 0.5) * 100,
+      isHovered: true,
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!imageContainerRef.current || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = imageContainerRef.current.getBoundingClientRect();
+    const x = (touch.clientX - rect.left) / rect.width - 0.5;
+    const y = (touch.clientY - rect.top) / rect.height - 0.5;
+    setTilt({
+      rotateY: x * 12,
+      rotateX: -y * 12,
+      lightX: (x + 0.5) * 100,
+      lightY: (y + 0.5) * 100,
+      isHovered: true,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rotateX: 0, rotateY: 0, lightX: 50, lightY: 50, isHovered: false });
+  };
 
   const handleAddToCart = () => {
     addToCart(product, quantity, undefined, colorOptions[selectedColorIndex].name, undefined);
@@ -70,46 +106,127 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         
         {/* Back Link */}
         <button
+          type="button"
           onClick={onNavigateHome}
-          className="inline-flex items-center gap-1.5 text-xs text-[#78716C] hover:text-[#1C1917] mb-6 font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-[#78716C] hover:text-[#1C1917] mb-6 font-medium transition-colors cursor-pointer group"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
           <span>Back to Catalogue</span>
         </button>
 
-        {/* 2-Column Product Layout (Exact match with bottom-right reference image) */}
+        {/* 2-Column Product Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
-          {/* Left: Gallery with 4 Vertical Thumbnails + 1 Large Main Image */}
+          {/* Left: Gallery with Thumbnails (only if multiple exist) + 3D Interactive Depth Main Viewer */}
           <div className="lg:col-span-7 flex flex-col sm:flex-row gap-4 items-start">
             
-            {/* 4 Small Vertical Thumbnails */}
-            <div className="flex sm:flex-col gap-3 order-2 sm:order-1 shrink-0 overflow-x-auto sm:overflow-visible w-full sm:w-auto">
-              {displayThumbnails.map((thumb, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all shrink-0 bg-white ${
-                    activeImageIndex === idx
-                      ? 'border-[#B88E52] shadow-sm'
-                      : 'border-[#E7E5E4] hover:border-[#D6D3D1] opacity-75 hover:opacity-100'
-                  }`}
-                >
-                  <img src={thumb} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {/* Thumbnails only shown if more than 1 image was actually uploaded */}
+            {images.length > 1 && (
+              <div className="flex sm:flex-col gap-3 order-2 sm:order-1 shrink-0 overflow-x-auto sm:overflow-visible w-full sm:w-auto pb-2 sm:pb-0">
+                {images.map((thumb, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all shrink-0 bg-white cursor-pointer ${
+                      activeImageIndex === idx
+                        ? 'border-[#B88E52] ring-2 ring-[#B88E52]/20 shadow-sm scale-102'
+                        : 'border-[#E7E5E4] hover:border-[#D6D3D1] opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={thumb}
+                      alt={`${product.name} view ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Large Main Image */}
-            <div className="order-1 sm:order-2 flex-1 w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white border border-[#E7E5E4] shadow-sm">
-              <img
-                src={currentImage}
-                alt={product.name}
-                className="w-full h-full object-cover object-center transition-all duration-300"
-              />
+            {/* Large Main Interactive Depth Viewer */}
+            <div
+              ref={imageContainerRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleMouseLeave}
+              style={{ perspective: '1100px' }}
+              className="order-1 sm:order-2 flex-1 w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white border border-[#E7E5E4] shadow-sm relative select-none cursor-crosshair group"
+            >
+              {/* 3D Tilted Image Container */}
+              <div
+                style={{
+                  transform: `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale3d(${tilt.isHovered ? 1.03 : 1}, ${tilt.isHovered ? 1.03 : 1}, 1)`,
+                  transition: tilt.isHovered ? 'transform 0.08s ease-out' : 'transform 0.5s ease-out',
+                }}
+                className="w-full h-full relative"
+              >
+                <img
+                  src={currentImage}
+                  alt={product.name}
+                  className="w-full h-full object-cover object-center transition-opacity duration-300 pointer-events-none"
+                />
+
+                {/* Dynamic Realistic Specular Sheen Overlay */}
+                <div
+                  style={{
+                    background: tilt.isHovered
+                      ? `radial-gradient(circle at ${tilt.lightX}% ${tilt.lightY}%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 45%, rgba(0,0,0,0.08) 100%)`
+                      : 'transparent',
+                    transition: 'background 0.1s ease-out',
+                  }}
+                  className="absolute inset-0 pointer-events-none"
+                />
+              </div>
+
+              {/* Interactive Depth Badge */}
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-normal pointer-events-none border border-white/10">
+                <Box className="w-3 h-3 text-[#B88E52]" />
+                <span>3D Depth Perspective</span>
+              </div>
+
+              {/* Multi-angle indicator */}
+              {images.length > 1 && (
+                <div className="absolute bottom-3 right-3 px-2 py-1 rounded bg-black/50 backdrop-blur-md text-white text-[11px] font-medium pointer-events-none">
+                  {activeImageIndex + 1} / {images.length}
+                </div>
+              )}
+
+              {/* Fullscreen Zoom preview trigger */}
+              <button
+                type="button"
+                onClick={() => setIsFullscreen(true)}
+                className="absolute top-3 right-3 p-2 rounded-md bg-white/90 hover:bg-white text-[#1C1917] shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                title="Expand Fullscreen View"
+                aria-label="Expand Fullscreen View"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
             </div>
 
           </div>
+
+          {/* Fullscreen Modal View */}
+          {isFullscreen && (
+            <div
+              className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+              onClick={() => setIsFullscreen(false)}
+            >
+              <img
+                src={currentImage}
+                alt={product.name}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              />
+              <button
+                type="button"
+                onClick={() => setIsFullscreen(false)}
+                className="absolute top-6 right-6 px-4 py-2 bg-white/20 hover:bg-white/40 text-white rounded-md text-xs uppercase tracking-wider"
+              >
+                Close (ESC)
+              </button>
+            </div>
+          )}
 
           {/* Right: Product Info & Actions */}
           <div className="lg:col-span-5 space-y-6">

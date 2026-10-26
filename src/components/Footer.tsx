@@ -71,18 +71,18 @@ export const Footer: React.FC<FooterProps> = ({
           <div>
             <a
               href="/"
-              aria-label="Luxeupho Home Interiors home"
+              aria-label="LEXUPHO Home Interiors home"
               className="mb-4 inline-flex items-center"
             >
               <img
                 src={LOGO_URL}
-                alt="Luxeupho Home Interiors"
+                alt="LEXUPHO Home Interiors"
                 className="h-20 w-auto object-contain"
               />
             </a>
 
             <p className="mb-5 text-sm leading-6 text-gray-600">
-              Transform your space with Luxeupho Home Interiors.
+              Transform your space with LEXUPHO Home Interiors.
               Discover elegant furniture and thoughtfully designed
               interiors that bring comfort and style to your home.
             </p>
@@ -300,7 +300,9 @@ export const Footer: React.FC<FooterProps> = ({
                 </li>
 
                 <li className="pt-1 text-xs text-gray-600">
-                  <span className="font-medium text-gray-800">Business Timings:</span>{' '}
+                  <span className="font-medium text-gray-800">
+                    Business Timings:
+                  </span>{' '}
                   10:00 AM – 7:00 PM (Mon – Sun)
                 </li>
               </ul>
@@ -315,18 +317,6 @@ export const Footer: React.FC<FooterProps> = ({
           <p className="text-center text-xs text-gray-600 lg:text-left">
             © {new Date().getFullYear()} Luxeupho Home Interiors.
             All rights reserved.
-          </p>
-
-          <p className="text-center text-xs text-gray-600">
-            Designed by{' '}
-            <a
-              href="https://www.instagram.com/maaz_ali_36/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-yellow-800 hover:underline"
-            >
-              maaz_ali_36
-            </a>
           </p>
 
           <button
