@@ -1,8 +1,36 @@
+export const SOFA_COMBINATIONS = [
+  '1+1 Sofa Set',
+  '3+1+1 Sofa Set',
+  '1+2+3 Sofa Set',
+  '2+2 Sofa Set',
+  '3+2 Sofa Set',
+  'Single-Seater Sofa',
+  'Double-Seater Sofa',
+  'Three-Seater Sofa',
+  'L-Shape Sofa',
+  'U-Shape Sofa',
+  'Recliner Sofa Set',
+  'Sofa Cum Bed'
+] as const;
+
+export type SofaCombination = typeof SOFA_COMBINATIONS[number];
+
+export const DINING_COMBINATIONS = [
+  '2-Seater Dining Set',
+  '4-Seater Dining Set',
+  '6-Seater Dining Set',
+  '8-Seater Dining Set',
+  'Dining Table + Chairs'
+] as const;
+
+export type DiningCombination = typeof DINING_COMBINATIONS[number];
+
 export interface Product {
   id: string;
   name: string;
   category: string;
   subcategory?: string;
+  combination?: string;
   description: string;
   price: number;
   originalPrice?: number;
@@ -47,6 +75,7 @@ export interface CartItem {
   selectedMaterial?: string;
   selectedColor?: string;
   selectedSize?: string;
+  selectedCombination?: string;
   quantity: number;
 }
 
@@ -56,6 +85,7 @@ export interface OrderItem {
   price: number;
   quantity: number;
   image: string;
+  combination?: string;
   selectedMaterial?: string;
   selectedColor?: string;
   selectedSize?: string;

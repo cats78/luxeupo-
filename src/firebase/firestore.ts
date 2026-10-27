@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
   onSnapshot,
+  runTransaction,
   Unsubscribe
 } from 'firebase/firestore';
 import { db, auth } from './config';
@@ -138,8 +139,9 @@ export async function saveProduct(product: Partial<Product> & { id?: string }): 
   const cleanData: Product = {
     id: productId,
     name: product.name || 'Bespoke Item',
-    category: product.category || 'Living Room Furniture',
+    category: product.category || 'Sofas',
     subcategory: product.subcategory || '',
+    combination: product.combination || '',
     description: product.description || '',
     price: Number(product.price) || 0,
     originalPrice: Number(product.originalPrice) || Number(product.price) || 0,
@@ -361,12 +363,43 @@ export async function deleteReel(reelId: string): Promise<void> {
 export async function createCustomerOrder(orderData: Omit<Order, 'id' | 'createdAt'>): Promise<string> {
   const path = 'orders';
   try {
-    const payload = sanitizeForFirestore({
-      ...orderData,
-      createdAt: new Date().toISOString()
+    const orderId = await runTransaction(db, async (transaction) => {
+      // 1. Verify and atomic decrement stock for each item
+      if (Array.isArray(orderData.items)) {
+        for (const item of orderData.items) {
+          if (!item.productId) continue;
+          const prodRef = doc(db, 'products', item.productId);
+          const prodDoc = await transaction.get(prodRef);
+          if (prodDoc.exists()) {
+            const prodData = prodDoc.data() as Product;
+            const currentStock = typeof prodData.stock === 'number' ? prodData.stock : 1;
+            if (currentStock < item.quantity) {
+              throw new Error(
+                `Only ${currentStock} piece${currentStock === 1 ? '' : 's'} available for "${item.name}". Please adjust quantity in checkout.`
+              );
+            }
+            const newStock = Math.max(0, currentStock - item.quantity);
+            transaction.update(prodRef, {
+              stock: newStock,
+              inStock: newStock > 0,
+              updatedAt: new Date().toISOString()
+            });
+          }
+        }
+      }
+
+      // 2. Create the order record inside the same atomic transaction
+      const newOrderRef = doc(collection(db, path));
+      const payload = sanitizeForFirestore({
+        ...orderData,
+        id: newOrderRef.id,
+        createdAt: new Date().toISOString()
+      });
+      transaction.set(newOrderRef, payload);
+      return newOrderRef.id;
     });
-    const docRef = await addDoc(collection(db, path), payload);
-    return docRef.id;
+
+    return orderId;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
     throw error;

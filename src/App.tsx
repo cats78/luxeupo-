@@ -226,11 +226,33 @@ function MainApp() {
     openCheckout();
   };
 
-  const navigateToProduct = (productId: string) => {
+  const [cachedActiveProduct, setCachedActiveProduct] = useState<Product | null>(null);
+
+  const matchProduct = (p: Product, targetId: string | null): boolean => {
+    if (!p || !targetId) return false;
+    const idStr = String(p.id).trim();
+    const targetStr = String(targetId).trim();
+    if (idStr === targetStr) return true;
+    if (idStr.toLowerCase() === targetStr.toLowerCase()) return true;
+    try {
+      if (decodeURIComponent(targetStr).toLowerCase() === idStr.toLowerCase()) return true;
+      if (encodeURIComponent(idStr).toLowerCase() === targetStr.toLowerCase()) return true;
+    } catch {}
+    const slug = (p.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (slug && slug === targetStr.toLowerCase()) return true;
+    return false;
+  };
+
+  const navigateToProduct = (productId: string, prodObj?: Product) => {
+    const p = prodObj || products.find((item) => matchProduct(item, productId));
+    if (p) {
+      setCachedActiveProduct(p);
+      setSingleProduct(p);
+    }
     window.history.pushState({}, '', `/product/${productId}`);
     setCurrentRoute('product');
     setActiveProductId(productId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   // Dedicated single product synchronization to immediately resolve direct links or fresh items
@@ -239,9 +261,10 @@ function MainApp() {
       setSingleProduct(null);
       return;
     }
-    const found = products.find((p) => p.id === activeProductId);
+    const found = products.find((p) => matchProduct(p, activeProductId));
     if (found) {
       setSingleProduct(found);
+      setCachedActiveProduct(found);
       return;
     }
 
@@ -252,6 +275,7 @@ function MainApp() {
         if (isSubscribed) {
           if (p) {
             setSingleProduct(p);
+            setCachedActiveProduct(p);
           }
           setFetchingProduct(false);
         }
@@ -268,7 +292,10 @@ function MainApp() {
   }, [activeProductId, products]);
 
   const activeProduct =
-    (activeProductId ? products.find((p) => p.id === activeProductId) : null) ||
+    (activeProductId && cachedActiveProduct && matchProduct(cachedActiveProduct, activeProductId)
+      ? cachedActiveProduct
+      : null) ||
+    (activeProductId ? products.find((p) => matchProduct(p, activeProductId)) : null) ||
     singleProduct;
 
   // ---------------- RENDER ADMIN ROUTE ---------------- //
@@ -400,6 +427,7 @@ function MainApp() {
           products={products}
           wishlistCount={wishlist.length}
           onOpenWishlist={() => handleTabChange('furniture')}
+          onSelectProduct={navigateToProduct}
         />
         
         <main className="flex-1">
@@ -418,7 +446,7 @@ function MainApp() {
           categories={categories}
           onSelectCategory={handleSelectCategoryFromOther}
         />
-        <NeroChatbot products={products} />
+        <NeroChatbot products={products} onOpenProduct={navigateToProduct} />
         <FloatingWhatsApp />
       </div>
     );
@@ -434,6 +462,7 @@ function MainApp() {
         products={products}
         wishlistCount={wishlist.length}
         onOpenWishlist={() => handleTabChange('furniture')}
+        onSelectProduct={navigateToProduct}
       />
 
       <main className="flex-1">
@@ -562,7 +591,7 @@ function MainApp() {
       />
 
       {/* Floating NERO Shopping Assistant (Above WhatsApp) */}
-      <NeroChatbot products={products} />
+      <NeroChatbot products={products} onOpenProduct={navigateToProduct} />
 
       {/* Floating WhatsApp Contact Button (Customer Care: 9704796170) */}
       <FloatingWhatsApp />

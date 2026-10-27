@@ -7,6 +7,7 @@ import {
   Phone,
   Lock,
   ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
@@ -17,7 +18,6 @@ interface CartDrawerProps {
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
-  onOpenNotice,
   onOpenCheckout,
 }) => {
   const {
@@ -27,7 +27,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     updateQuantity,
     removeFromCart,
     subtotal,
-    deliveryFee,
     total,
     openCheckout,
   } = useCart();
@@ -68,16 +67,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </h2>
                 <span className="text-xs text-[#78716C] mt-0.5 block font-light">
                   {items.length}{' '}
-                  {items.length === 1
-                    ? 'selected piece'
-                    : 'selected pieces'}
+                  {items.length === 1 ? 'selected piece' : 'selected pieces'}
                 </span>
               </div>
             </div>
 
             <button
               onClick={() => setIsCartOpen(false)}
-              className="p-1.5 text-[#78716C] hover:text-[#1C1917] rounded-full hover:bg-[#FAF8F5] transition-colors"
+              className="p-1.5 text-[#78716C] hover:text-[#1C1917] rounded-full hover:bg-[#FAF8F5] transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -96,8 +93,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </h3>
 
                 <p className="text-xs text-[#78716C] max-w-xs mb-6 leading-relaxed font-light">
-                  Explore our curated architectural furniture and select your
-                  signature pieces.
+                  Explore our curated architectural furniture and select your signature pieces.
                 </p>
 
                 <button
@@ -108,89 +104,112 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </button>
               </div>
             ) : (
-              items.map((item, idx) => (
-                <div key={idx} className="pt-4 first:pt-0 flex gap-4">
-                  <img
-                    src={
-                      item.product.images[0] ||
-                      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=80'
-                    }
-                    alt={item.product.name}
-                    className="w-20 h-20 object-cover rounded-lg border border-[#E7E5E4] shrink-0 bg-white"
-                  />
+              items.map((item, idx) => {
+                const availableStock = typeof item.product.stock === 'number' ? item.product.stock : 99;
+                const isOnePiece = availableStock === 1;
+                const isMaxReached = item.quantity >= availableStock;
+                const combination = item.selectedCombination || item.product.combination;
 
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start gap-2">
-                        <h4 className="font-medium text-sm text-[#1C1917] line-clamp-1">
-                          {item.product.name}
-                        </h4>
+                return (
+                  <div key={idx} className="pt-4 first:pt-0 flex gap-4">
+                    <img
+                      src={
+                        item.product.images && item.product.images.length > 0
+                          ? item.product.images[0]
+                          : 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=80'
+                      }
+                      alt={item.product.name}
+                      className="w-20 h-20 object-cover rounded-lg border border-[#E7E5E4] shrink-0 bg-white"
+                    />
 
-                        <button
-                          onClick={() => removeFromCart(idx)}
-                          className="text-[#A8A29E] hover:text-red-700 transition-colors p-1"
-                          title="Remove item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="font-medium text-sm text-[#1C1917] line-clamp-1">
+                            {item.product.name}
+                          </h4>
 
-                      <div className="text-[11px] text-[#78716C] space-y-0.5 mt-0.5">
-                        {item.selectedColor && (
-                          <div>
-                            Color:{' '}
-                            <span className="font-medium text-[#1C1917]">
-                              {item.selectedColor}
+                          <button
+                            onClick={() => removeFromCart(idx)}
+                            className="text-[#A8A29E] hover:text-red-700 transition-colors p-1 cursor-pointer"
+                            title="Remove item from bag"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Combination badge */}
+                        {combination && (
+                          <div className="mt-1">
+                            <span className="inline-block px-2 py-0.5 bg-[#B88E52]/10 border border-[#B88E52]/30 text-[#B88E52] rounded text-[10px] font-semibold">
+                              Combination: {combination}
                             </span>
                           </div>
                         )}
 
-                        {item.selectedMaterial && (
-                          <div>
-                            Material:{' '}
-                            <span className="font-medium text-[#1C1917]">
-                              {item.selectedMaterial}
-                            </span>
+                        {isOnePiece && (
+                          <div className="flex items-center gap-1 text-[11px] text-[#B88E52] font-medium mt-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>Only 1 piece available</span>
                           </div>
                         )}
+
+                        <div className="text-[11px] text-[#78716C] space-y-0.5 mt-0.5">
+                          {item.selectedColor && (
+                            <div>
+                              Color:{' '}
+                              <span className="font-medium text-[#1C1917]">
+                                {item.selectedColor}
+                              </span>
+                            </div>
+                          )}
+
+                          {item.selectedMaterial && (
+                            <div>
+                              Material:{' '}
+                              <span className="font-medium text-[#1C1917]">
+                                {item.selectedMaterial}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center border border-[#D6D3D1] bg-white rounded-md text-xs">
-                        <button
-                          onClick={() =>
-                            updateQuantity(idx, item.quantity - 1)
-                          }
-                          className="px-2.5 py-1 font-normal hover:bg-[#FAF8F5]"
-                        >
-                          -
-                        </button>
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center border border-[#D6D3D1] bg-white rounded-md text-xs">
+                          <button
+                            onClick={() => updateQuantity(idx, item.quantity - 1)}
+                            className="px-2.5 py-1 font-normal hover:bg-[#FAF8F5] cursor-pointer"
+                          >
+                            -
+                          </button>
 
-                        <span className="px-3 py-1 font-normal text-[#1C1917]">
-                          {item.quantity}
+                          <span className="px-3 py-1 font-semibold text-[#1C1917]">
+                            {item.quantity}
+                          </span>
+
+                          <button
+                            disabled={isMaxReached}
+                            onClick={() => updateQuantity(idx, item.quantity + 1)}
+                            className={`px-2.5 py-1 font-normal ${
+                              isMaxReached
+                                ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                                : 'hover:bg-[#FAF8F5] cursor-pointer'
+                            }`}
+                            title={isMaxReached ? (isOnePiece ? 'Only 1 piece available' : `Max available: ${availableStock}`) : 'Increase quantity'}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <span className="text-sm font-semibold text-[#1C1917]">
+                          ₹ {(item.product.price * item.quantity).toLocaleString('en-IN')}
                         </span>
-
-                        <button
-                          onClick={() =>
-                            updateQuantity(idx, item.quantity + 1)
-                          }
-                          className="px-2.5 py-1 font-normal hover:bg-[#FAF8F5]"
-                        >
-                          +
-                        </button>
                       </div>
-
-                      <span className="text-sm font-normal text-[#1C1917]">
-                        ₹{' '}
-                        {(
-                          item.product.price * item.quantity
-                        ).toLocaleString('en-IN')}
-                      </span>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
@@ -200,21 +219,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="space-y-1.5 text-xs text-[#57534E]">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-normal text-[#1C1917]">
+                  <span className="font-medium text-[#1C1917]">
                     ₹ {subtotal.toLocaleString('en-IN')}
                   </span>
                 </div>
 
                 <div className="flex justify-between">
                   <span>White-Glove Pan-India Setup</span>
-                  <span className="font-normal text-[#3E7B54]">
+                  <span className="font-medium text-[#3E7B54]">
                     Complimentary
                   </span>
                 </div>
 
-                <div className="flex justify-between text-base font-normal text-[#1C1917] pt-2 border-t border-[#F5F5F4]">
+                <div className="flex justify-between text-base font-semibold text-[#1C1917] pt-2 border-t border-[#F5F5F4]">
                   <span>Estimated Total</span>
-                  <span>₹ {total.toLocaleString('en-IN')}</span>
+                  <span className="text-[#B88E52]">₹ {total.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
@@ -222,11 +241,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <button
                 type="button"
                 onClick={handleCheckoutClick}
-                className="w-full py-3.5 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-[0.14em] rounded-lg flex items-center justify-center gap-2 shadow-md transition-colors cursor-pointer"
+                className="w-full py-3.5 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-semibold uppercase tracking-[0.14em] rounded-lg flex items-center justify-center gap-2 shadow-md transition-colors cursor-pointer"
               >
                 <Lock className="w-4 h-4" />
                 <span>
-                  Pay ₹ {total.toLocaleString('en-IN')} with Razorpay
+                  Continue to Checkout • ₹ {total.toLocaleString('en-IN')}
                 </span>
               </button>
 
@@ -241,15 +260,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <a
                   href={`https://wa.me/91${settings.phone}?text=${encodeURIComponent(
                     `Hello LUXEUPHO, I would like to reserve pieces in my shopping bag: ${items
-                      .map(
-                        (i) =>
-                          `${i.product.name} (Qty ${i.quantity})`
-                      )
+                      .map((i) => `${i.product.name}${i.selectedCombination || i.product.combination ? ` (${i.selectedCombination || i.product.combination})` : ''} (Qty ${i.quantity})`)
                       .join(', ')}. Total: ₹${total.toLocaleString('en-IN')}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-3 px-3 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  className="py-3 px-3 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs font-medium uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>WhatsApp Concierge</span>
@@ -257,7 +273,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                 <a
                   href={`tel:${settings.phone}`}
-                  className="py-3 px-3 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  className="py-3 px-3 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-medium uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                 >
                   <Phone className="w-4 h-4" />
                   <span>Call {settings.phone}</span>

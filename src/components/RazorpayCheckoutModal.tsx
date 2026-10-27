@@ -2,15 +2,13 @@ import React, { useState } from 'react';
 import {
   X,
   ShieldCheck,
-  CreditCard,
   CheckCircle2,
   AlertCircle,
-  Phone,
-  MessageCircle,
-  Truck,
-  Sparkles,
   Lock,
   ArrowLeft,
+  Trash2,
+  ShoppingBag,
+  MessageCircle,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
@@ -43,6 +41,7 @@ export const RazorpayCheckoutModal: React.FC = () => {
     clearCart,
     isCheckoutOpen,
     setIsCheckoutOpen,
+    removeFromCart,
   } = useCart();
   const { settings } = useSettings();
 
@@ -97,6 +96,11 @@ export const RazorpayCheckoutModal: React.FC = () => {
     e.preventDefault();
     setErrorMessage('');
 
+    if (items.length === 0) {
+      setErrorMessage('Your shopping bag is empty. Please select a piece to order.');
+      return;
+    }
+
     // Form Validations
     if (!customerName.trim()) {
       setErrorMessage('Please enter your full name.');
@@ -119,133 +123,78 @@ export const RazorpayCheckoutModal: React.FC = () => {
       return;
     }
 
-    if (!/^\d{6}$/.test(postalCode.trim())) {
-      setErrorMessage('Please enter a valid 6-digit PIN code.');
-      return;
-    }
-
-    if (items.length === 0) {
-      setErrorMessage('Your shopping bag is empty.');
+    if (!postalCode.trim() || postalCode.replace(/\D/g, '').length < 6) {
+      setErrorMessage('Please enter a valid 6-digit postal pincode.');
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Step 1: Ensure Razorpay SDK is loaded
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error('Could not load the Razorpay checkout script. Check internet connectivity.');
+      // Step 1: Ensure Razorpay Script is ready
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !window.Razorpay) {
+        throw new Error('Razorpay SDK could not be loaded. Please check your internet connection or use WhatsApp concierge.');
       }
 
-      // Step 2: Request server to create a Razorpay Order
-      const response = await fetch('/api/razorpay-create-order', {
+      // Step 2: Create server-authenticated Razorpay Order
+      const createOrderRes = await fetch('/api/razorpay-create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          amount: total,
+          customerName: customerName.trim(),
+          customerPhone: cleanPhone,
+          customerEmail: customerEmail.trim(),
           items: items.map((i) => ({
             productId: i.product.id,
             name: i.product.name,
             price: i.product.price,
             quantity: i.quantity,
-            selectedMaterial: i.selectedMaterial,
-            selectedColor: i.selectedColor,
-            selectedSize: i.selectedSize,
+            combination: i.selectedCombination || i.product.combination || '',
           })),
-          customer: {
-            name: customerName.trim(),
-            phone: cleanPhone,
-            email: customerEmail.trim() || undefined,
-            shippingAddress: shippingAddress.trim(),
-            city: city.trim(),
-            postalCode: postalCode.trim(),
-            notes: notes.trim(),
-          },
         }),
       });
 
-      const responseText = await response.text();
+      const responseText = await createOrderRes.text();
       let orderData: any;
       try {
         orderData = JSON.parse(responseText);
-      } catch (parseErr) {
+      } catch (pErr) {
         console.error('Non-JSON response from /api/razorpay-create-order:', responseText);
-        throw new Error(
-          response.status === 404
-            ? 'Order API route not found (404). Please ensure your latest Vercel build has finished deploying.'
-            : `Server Error (${response.status}): ${responseText.slice(0, 150) || 'Invalid server response.'}`
-        );
+        throw new Error(`Server returned error (${createOrderRes.status}): ${responseText.slice(0, 150)}`);
       }
 
-      if (!response.ok || !orderData.success) {
-        throw new Error(
-          orderData.message ||
-            'Could not initiate Razorpay order. Please ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set in Vercel.'
-        );
+      if (!createOrderRes.ok || !orderData.orderId) {
+        throw new Error(orderData.message || 'Failed to initialize payment gateway.');
       }
 
-      // Step 3: Configure Razorpay Checkout modal
+      // Step 3: Launch standard Razorpay Checkout
       const options = {
         key: orderData.keyId,
-        amount: orderData.amountInPaise,
+        amount: orderData.amount,
         currency: orderData.currency || 'INR',
-        name: 'LUXEUPHO',
-        description: `Order #${orderData.orderNumber} - Luxury Furniture`,
-        image: settings.logoUrl || 'https://i.ibb.co/B2ynSdJp/Luxeupho-Gold-Home-Interiors-Emblem.png',
-        order_id: orderData.razorpayOrderId,
+        name: 'LUXEUPHO HOME INTERIORS',
+        description: `Order ${orderData.orderNumber} • ${items.length} Signature Piece(s)`,
+        image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=200&q=80',
+        order_id: orderData.orderId,
         prefill: {
           name: customerName.trim(),
           contact: cleanPhone,
           email: customerEmail.trim() || undefined,
         },
-        notes: {
-          orderNumber: orderData.orderNumber,
-          shippingAddress: `${shippingAddress.trim()}, ${city.trim()} - ${postalCode.trim()}`,
-        },
         theme: {
-          color: '#B88E52', // LUXEUPHO signature champagne gold
-        },
-        config: {
-          display: {
-            blocks: {
-              upi: {
-                name: 'Pay using UPI (QR Code, Google Pay, PhonePe)',
-                instruments: [
-                  {
-                    method: 'upi',
-                    flows: ['qr', 'intent', 'collect'],
-                    apps: ['google_pay', 'phonepe', 'paytm', 'bhim', 'cred'],
-                  },
-                ],
-              },
-              other: {
-                name: 'Cards, NetBanking & Others',
-                instruments: [
-                  { method: 'card' },
-                  { method: 'netbanking' },
-                  { method: 'wallet' },
-                  { method: 'emi' },
-                ],
-              },
-            },
-            sequence: ['block.upi', 'block.other'],
-            preferences: {
-              show_default_blocks: true,
-            },
-          },
+          color: '#B88E52',
+          backdrop_color: '#121214',
         },
         modal: {
           ondismiss: () => {
             setIsProcessing(false);
           },
         },
-        handler: async (paymentResponse: {
-          razorpay_payment_id: string;
-          razorpay_order_id: string;
-          razorpay_signature: string;
-        }) => {
+        handler: async (paymentResponse: any) => {
           try {
-            // Step 4: Verify payment cryptographically on server
+            // Step 4: Verify payment cryptographically on backend
             const verifyRes = await fetch('/api/razorpay-verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -272,12 +221,13 @@ export const RazorpayCheckoutModal: React.FC = () => {
               );
             }
 
-            // Step 5: Save verified order into existing Firestore database
+            // Step 5: Save verified order into Firestore database with inventory check
             const orderItemsPayload: OrderItem[] = items.map((i) => ({
               productId: i.product.id,
               name: i.product.name,
               price: i.product.price,
               quantity: i.quantity,
+              combination: i.selectedCombination || i.product.combination || undefined,
               image: i.product.images?.[0] || '',
               selectedMaterial: i.selectedMaterial,
               selectedColor: i.selectedColor,
@@ -342,7 +292,6 @@ export const RazorpayCheckoutModal: React.FC = () => {
       });
 
       rzpInstance.open();
-      // Ensure the button state resets so it is not permanently stuck
       setTimeout(() => {
         setIsProcessing(false);
       }, 1200);
@@ -369,6 +318,16 @@ export const RazorpayCheckoutModal: React.FC = () => {
         {/* Header with Clear Back Navigation */}
         <div className="flex items-center justify-between px-6 py-4 border-b-2 border-[#E8DFC9] bg-[#FAF8F5]">
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="mr-1 p-1.5 rounded-lg border border-[#D6C7B2] bg-white text-[#78716C] hover:text-[#1C1917] hover:border-[#B88E52] transition-colors flex items-center gap-1 text-xs font-medium cursor-pointer shadow-sm"
+              title="Return to browsing"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
+            </button>
+
             <div className="w-8 h-8 rounded-full bg-[#FAF0DD] border-2 border-[#E8DFC9] flex items-center justify-center text-[#B88E52]">
               <Lock className="w-4 h-4" />
             </div>
@@ -382,305 +341,316 @@ export const RazorpayCheckoutModal: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-[#D6D3D1] hover:border-[#1C1917] rounded-lg text-xs font-normal text-[#1C1917] transition-all shadow-xs cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-[#B88E52]" />
-              <span>Back to Bag</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleClose}
-              className="p-1.5 text-[#78716C] hover:text-[#1C1917] rounded-full hover:bg-[#F5F2ED] transition-colors"
-              aria-label="Close Checkout"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            onClick={handleClose}
+            className="p-1.5 text-[#78716C] hover:text-[#1C1917] rounded-full hover:bg-white transition-colors cursor-pointer"
+            aria-label="Close Checkout"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* ---------------- CONFIRMED ORDER SUCCESS SCREEN ---------------- */}
+        {/* Confirmed Order Success View */}
         {confirmedOrder ? (
           <div className="p-6 sm:p-8 space-y-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
-              <CheckCircle2 className="w-9 h-9" />
+            <div className="w-16 h-16 bg-[#F3F8F4] border-2 border-[#3E7B54] rounded-full flex items-center justify-center mx-auto text-[#3E7B54]">
+              <CheckCircle2 className="w-10 h-10" />
             </div>
 
-            <div className="space-y-1.5">
-              <span className="text-[11px] uppercase tracking-[0.25em] text-[#B88E52] font-normal">
-                Payment Verified &amp; Order Placed
+            <div>
+              <span className="px-3 py-1 bg-[#FAF0DD] text-[#B88E52] text-xs font-semibold rounded-full uppercase tracking-wider">
+                Order #{confirmedOrder.orderNumber} Confirmed
               </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#1C1917]">
+              <h3 className="font-serif text-2xl font-normal text-[#1C1917] mt-3">
                 Thank you, {confirmedOrder.customerName}
               </h3>
-              <p className="text-xs text-[#78716C] max-w-md mx-auto leading-relaxed">
-                Your bespoke furniture order has been received. Our senior atelier concierge will contact you to coordinate scheduled white-glove delivery.
+              <p className="text-xs text-[#78716C] mt-1 max-w-md mx-auto leading-relaxed">
+                Your payment of <strong className="text-[#1C1917]">₹ {confirmedOrder.total.toLocaleString('en-IN')}</strong> was verified (Ref: {confirmedOrder.paymentId}).
+                Our atelier has received your architectural furniture specifications.
               </p>
             </div>
 
-            {/* Receipt Summary Card */}
-            <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 sm:p-5 text-left text-xs space-y-3">
-              <div className="flex justify-between items-center pb-3 border-b border-[#E8E2D9]">
-                <span className="text-[#78716C]">Order Reference:</span>
-                <span className="font-serif font-bold text-[#1C1917] tracking-wider text-sm">
-                  #{confirmedOrder.orderNumber}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[#78716C]">Razorpay Payment ID:</span>
-                <span className="font-mono text-[#57534E] text-[11px]">
-                  {confirmedOrder.paymentId}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[#78716C]">Delivery Destination:</span>
-                <span className="text-[#1C1917] font-medium text-right max-w-[220px] truncate">
-                  {confirmedOrder.shippingAddress}, {confirmedOrder.city} - {confirmedOrder.postalCode}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-[#E8E2D9] text-sm">
-                <span className="font-normal text-[#1C1917]">Amount Paid:</span>
-                <span className="font-serif font-bold text-[#B88E52]">
-                  ₹ {confirmedOrder.total.toLocaleString('en-IN')}
-                </span>
-              </div>
+            {/* Confirmed Pieces */}
+            <div className="bg-[#FAF8F5] rounded-xl border-2 border-[#E8DFC9] p-4 text-left max-h-48 overflow-y-auto space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#78716C] block">
+                Items in this order:
+              </span>
+              {confirmedOrder.items.map((it, idx) => (
+                <div key={idx} className="flex justify-between items-center text-xs py-1 border-b border-[#E8DFC9] last:border-0">
+                  <div className="truncate pr-2">
+                    <span className="font-medium text-[#1C1917]">{it.name}</span>
+                    {it.combination && (
+                      <span className="ml-1 text-[10px] text-[#B88E52] font-semibold">
+                        ({it.combination})
+                      </span>
+                    )}
+                    <span className="text-[#78716C] ml-1">× {it.quantity}</span>
+                  </div>
+                  <span className="font-semibold text-[#1C1917] shrink-0">
+                    ₹ {(it.price * it.quantity).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              ))}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
               <a
                 href={`https://wa.me/91${settings.phone}?text=${encodeURIComponent(
-                  `Hello LUXEUPHO, I have successfully placed order #${confirmedOrder.orderNumber} (Payment ID: ${confirmedOrder.paymentId}) for ₹${confirmedOrder.total.toLocaleString('en-IN')}. Please confirm dispatch timeline.`
+                  `Hello LUXEUPHO, I have paid for Order #${confirmedOrder.orderNumber} (₹${confirmedOrder.total.toLocaleString('en-IN')}). Please provide production and dispatch schedule.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-3 px-4 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs uppercase font-normal tracking-wider rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm"
+                className="py-3 px-5 bg-[#25D366] hover:bg-[#1EBE5B] text-white text-xs font-medium uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span>Message Concierge on WhatsApp</span>
+                <span>Track on WhatsApp</span>
               </a>
 
               <button
                 type="button"
                 onClick={handleClose}
-                className="py-3 px-6 bg-[#1C1917] hover:bg-[#B88E52] text-white text-xs uppercase font-normal tracking-wider rounded-lg transition-colors shadow-sm"
+                className="py-3 px-6 bg-[#1C1917] hover:bg-black text-[#D4AF37] text-xs font-medium uppercase tracking-wider rounded-lg transition-colors cursor-pointer"
               >
-                Continue Browsing
+                Close &amp; Return to Showroom
               </button>
             </div>
           </div>
         ) : (
-          /* ---------------- CHECKOUT INPUT FORM ---------------- */
-          <form onSubmit={handlePayNow} className="p-6 sm:p-8 space-y-6">
-            
-            {/* Error Notification */}
+          /* Checkout Form & Order Summary */
+          <form onSubmit={handlePayNow} className="p-6 sm:p-7 space-y-6 max-h-[80vh] overflow-y-auto">
             {errorMessage && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{errorMessage}</span>
+              <div className="p-3 bg-red-50 border-2 border-red-300 rounded-lg text-red-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span className="font-medium">{errorMessage}</span>
               </div>
             )}
 
-            {/* Section 1: Customer Details */}
-            <div className="space-y-4">
-              <h3 className="font-serif text-sm font-normal uppercase tracking-wider text-[#1C1917] pb-1 border-b border-[#F0EBE1]">
-                1. Delivery &amp; Contact Details
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#57534E] mb-1">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#57534E] mb-1">
-                    Mobile Number (10 Digits) *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    maxLength={10}
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    placeholder="e.g. 9704796170"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all font-mono shadow-xs"
-                  />
-                </div>
+            {/* Complete Order Summary with Combination, Price, and Remove Button */}
+            <div className="bg-[#FAF8F5] rounded-xl border-2 border-[#D6C7B2] p-4 sm:p-5 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E7E5E4]">
+                <h3 className="font-serif text-sm font-semibold text-[#1C1917] tracking-wide flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-[#B88E52]" />
+                  <span>Order Summary ({items.length} {items.length === 1 ? 'piece' : 'pieces'})</span>
+                </h3>
+                <span className="text-xs text-[#78716C]">
+                  Bill Total: <strong className="text-[#1C1917]">₹ {total.toLocaleString('en-IN')}</strong>
+                </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {items.length === 0 ? (
+                <div className="py-6 text-center text-[#78716C] text-xs space-y-3">
+                  <p className="text-sm font-medium text-[#1C1917]">Your shopping bag is empty.</p>
+                  <p className="text-xs text-[#78716C]">All pieces were removed from your cart.</p>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="px-4 py-2 bg-[#B88E52] text-white rounded-lg text-xs font-medium cursor-pointer"
+                  >
+                    Return to Catalog
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-[#E7E5E4] max-h-56 overflow-y-auto pr-1 space-y-2">
+                  {items.map((item, idx) => {
+                    const itemComb = item.selectedCombination || item.product.combination;
+                    const lineTotal = item.product.price * item.quantity;
+                    return (
+                      <div key={idx} className="pt-2 first:pt-0 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img
+                            src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=150&q=80'}
+                            alt={item.product.name}
+                            className="w-12 h-12 object-cover rounded-lg border border-[#E7E5E4] shrink-0 bg-white"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-[#1C1917] truncate">{item.product.name}</p>
+                            {itemComb && (
+                              <span className="inline-block text-[10px] text-[#B88E52] font-semibold bg-[#B88E52]/10 px-2 py-0.5 rounded border border-[#B88E52]/30 truncate max-w-[170px] mt-0.5">
+                                Combination: {itemComb}
+                              </span>
+                            )}
+                            <div className="text-[11px] text-[#78716C] mt-0.5">
+                              ₹ {item.product.price.toLocaleString('en-IN')} × {item.quantity}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="font-bold text-[#1C1917]">
+                            ₹ {lineTotal.toLocaleString('en-IN')}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(idx)}
+                            className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-transparent hover:border-red-200"
+                            title="Remove piece from Cart"
+                            aria-label={`Remove ${item.product.name} from Cart`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Remove</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Totals Breakdown */}
+              {items.length > 0 && (
+                <div className="pt-3 border-t border-[#E7E5E4] space-y-1.5 text-xs">
+                  <div className="flex justify-between text-[#57534E]">
+                    <span>Pieces Subtotal</span>
+                    <span>₹ {subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-[#57534E]">
+                    <span>White-Glove Pan-India Setup &amp; Delivery</span>
+                    <span className="text-[#3E7B54] font-semibold">Complimentary</span>
+                  </div>
+                  <div className="flex justify-between text-base font-bold text-[#1C1917] pt-2 border-t border-[#E7E5E4]">
+                    <span>Grand Total</span>
+                    <span className="text-[#B88E52]">₹ {total.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Customer Details Form */}
+            {items.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="text-xs uppercase tracking-wider font-bold text-[#121214] border-b-2 border-[#E8DFC9] pb-1">
+                  1. Contact &amp; Client Details
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="e.g. Aryan Malhotra"
+                      className="w-full px-3.5 py-2.5 text-xs border-2 border-[#D6C7B2] rounded-lg focus:border-[#B88E52] focus:outline-none bg-white font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                      Phone Number (for Delivery &amp; UPI) *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="10-digit mobile number"
+                      className="w-full px-3.5 py-2.5 text-xs border-2 border-[#D6C7B2] rounded-lg focus:border-[#B88E52] focus:outline-none bg-white font-medium"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#57534E] mb-1">
-                    Email Address (For Tax Receipt)
+                  <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                    Email Address (Optional, for digital tax invoice)
                   </label>
                   <input
                     type="email"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
+                    placeholder="aryan@example.com"
+                    className="w-full px-3.5 py-2.5 text-xs border-2 border-[#D6C7B2] rounded-lg focus:border-[#B88E52] focus:outline-none bg-white"
                   />
                 </div>
+
+                <h4 className="text-xs uppercase tracking-wider font-bold text-[#121214] border-b-2 border-[#E8DFC9] pb-1 pt-2">
+                  2. Destination &amp; White-Glove Setup
+                </h4>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#57534E] mb-1">
-                    PIN Code (6 Digits) *
+                  <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                    Street Address / Villa / Apartment *
                   </label>
-                  <input
-                    type="text"
+                  <textarea
                     required
-                    maxLength={6}
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="e.g. 500034"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all font-mono shadow-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs uppercase tracking-wider text-[#57534E] mb-1">
-                    Complete Shipping Address *
-                  </label>
-                  <input
-                    type="text"
-                    required
+                    rows={2}
                     value={shippingAddress}
                     onChange={(e) => setShippingAddress(e.target.value)}
-                    placeholder="House/Villa No., Street, Area/Landmark"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
+                    placeholder="Complete address including building, apartment/villa number, street"
+                    className="w-full px-3.5 py-2.5 text-xs border-2 border-[#D6C7B2] rounded-lg focus:border-[#B88E52] focus:outline-none bg-white font-medium"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                      City *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="e.g. Mumbai, Bangalore"
+                      className="w-full px-3.5 py-2.5 text-xs border-2 border-[#D6C7B2] rounded-lg focus:border-[#B88E52] focus:outline-none bg-white font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                      Pincode *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      placeholder="e.g. 400001"
+                      className="w-full px-3.5 py-2.5 text-xs border-2 border-[#D6C7B2] rounded-lg focus:border-[#B88E52] focus:outline-none bg-white font-medium"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#57534E] mb-1">
-                    City *
+                  <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                    Special Instructions / Custom Requests
                   </label>
                   <input
                     type="text"
-                    required
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="e.g. Hyderabad"
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border-2 border-[#D6D3D1] text-[#1C1917] rounded-lg focus:border-[#B88E52] focus:bg-white focus:outline-none transition-all shadow-xs"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Service lift available, call prior to dispatch"
+                    className="w-full px-3.5 py-2.5 text-xs border-2 border-[#D6C7B2] rounded-lg focus:border-[#B88E52] focus:outline-none bg-white"
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Section 2: Order Summary */}
-            <div className="space-y-3 pt-2">
-              <h3 className="font-serif text-sm font-normal uppercase tracking-wider text-[#1C1917] pb-1 border-b border-[#F0EBE1]">
-                2. Order Summary
-              </h3>
-
-              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 divide-y divide-[#F5F2ED]">
-                {items.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2 text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <img
-                        src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=200&q=80'}
-                        alt={item.product.name}
-                        className="w-10 h-10 rounded object-cover border border-[#E8DFC9] shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <span className="font-normal text-[#1C1917] truncate block">
-                          {item.product.name}
-                        </span>
-                        <span className="text-[10px] text-[#78716C] block">
-                          Qty: {item.quantity} {item.selectedColor ? `• ${item.selectedColor}` : ''}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="font-normal text-[#1C1917] shrink-0 ml-3">
-                      ₹ {(item.product.price * item.quantity).toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Price Calculations */}
-              <div className="p-3.5 bg-[#FAF8F5] border-2 border-[#E8DFC9] rounded-xl space-y-1.5 text-xs">
-                <div className="flex justify-between text-[#78716C]">
-                  <span>Subtotal:</span>
-                  <span>₹ {subtotal.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between text-[#78716C] items-center">
-                  <span className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5 text-[#3E7B54]" />
-                    <span>White-Glove Pan-India Setup:</span>
-                  </span>
-                  <span className="text-[#3E7B54] font-medium">Complimentary</span>
-                </div>
-                <div className="flex justify-between items-center text-sm font-normal text-[#1C1917] pt-2 border-t border-[#E8E2D9]">
-                  <span>Total Payable:</span>
-                  <span className="font-serif text-base text-[#B88E52]">
-                    ₹ {total.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Trust Marks */}
-            <div className="p-3 bg-[#FAF8F5] border-2 border-[#E8DFC9] rounded-xl flex items-center justify-between text-[11px] text-[#78716C]">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#B88E52]" />
-                <span>UPI, PhonePe, Google Pay, Credit/Debit Cards, EMI</span>
-              </div>
-              <span className="font-mono text-[10px] uppercase text-[#B88E52] font-semibold">
-                Razorpay Secured
-              </span>
-            </div>
-
-            {/* Error Notification (Bottom) */}
-            {errorMessage && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{errorMessage}</span>
               </div>
             )}
 
-            {/* Action Buttons: Clear Back Button + Pay Button */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="w-full sm:w-auto px-6 py-4 bg-white hover:bg-[#FAF8F5] text-[#1C1917] text-xs font-normal uppercase tracking-[0.14em] border-2 border-[#D6D3D1] hover:border-[#1C1917] rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
-              >
-                <ArrowLeft className="w-4 h-4 text-[#B88E52]" />
-                <span>Back to Bag</span>
-              </button>
+            {/* Action Buttons */}
+            {items.length > 0 && (
+              <div className="pt-2 space-y-3">
+                <button
+                  type="submit"
+                  disabled={isProcessing || items.length === 0}
+                  className="w-full py-3.5 px-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-bold uppercase tracking-[0.14em] rounded-lg flex items-center justify-center gap-2 shadow-lg transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>
+                    {isProcessing ? 'Connecting to Razorpay...' : `Pay ₹ ${total.toLocaleString('en-IN')} with Razorpay`}
+                  </span>
+                </button>
 
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full flex-1 py-4 bg-[#B88E52] hover:bg-[#A57D43] text-white text-xs font-normal uppercase tracking-[0.16em] border-2 border-[#B88E52] rounded-xl flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-60 cursor-pointer"
-              >
-                <Lock className="w-4 h-4" />
-                <span>
-                  {isProcessing
-                    ? 'Connecting to Razorpay...'
-                    : `Pay ₹ ${total.toLocaleString('en-IN')} via Razorpay`}
-                </span>
-              </button>
-            </div>
+                <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#78716C]">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#B88E52]" />
+                  <span>Supports UPI (GPay, PhonePe, Paytm), Credit/Debit Cards &amp; NetBanking</span>
+                </div>
+              </div>
+            )}
           </form>
         )}
+
       </div>
     </div>
   );

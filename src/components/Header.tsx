@@ -17,6 +17,7 @@ interface HeaderProps {
   products: Product[];
   wishlistCount: number;
   onOpenWishlist: () => void;
+  onSelectProduct?: (productId: string, prodObj?: Product) => void;
 }
 
 const LOGO_URL =
@@ -28,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   products,
   wishlistCount,
   onOpenWishlist,
+  onSelectProduct,
 }) => {
   const { settings } = useSettings();
   const { totalCount, setIsCartOpen } = useCart();
@@ -53,8 +55,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navItems = [
     { tab: 'home', label: 'Home' },
-    { tab: 'furniture', label: 'Furniture' },
     { tab: 'categories', label: 'Categories' },
+    { tab: 'furniture', label: 'Furniture' },
     { tab: 'about', label: 'About Us' },
   ] as const;
 
@@ -245,9 +247,18 @@ export const Header: React.FC<HeaderProps> = ({
                   <a
                     key={product.id}
                     href={`/product/${product.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center justify-between gap-3 border-b border-[#F5F2ED] p-3 last:border-b-0 hover:bg-[#FCFAF7] sm:p-4"
+                    onClick={(e) => {
+                      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+                      e.preventDefault();
+                      setSearchOpen(false);
+                      setSearchQuery('');
+                      if (onSelectProduct) {
+                        onSelectProduct(product.id, product);
+                      } else {
+                        window.location.href = `/product/${product.id}`;
+                      }
+                    }}
+                    className="group flex items-center justify-between gap-3 border-b border-[#F5F2ED] p-3 last:border-b-0 hover:bg-[#FCFAF7] sm:p-4 cursor-pointer"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <img

@@ -4,7 +4,14 @@ import { useSettings } from './SettingsContext';
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product, quantity?: number, selectedMaterial?: string, selectedColor?: string, selectedSize?: string) => void;
+  addToCart: (
+    product: Product,
+    quantity?: number,
+    selectedMaterial?: string,
+    selectedColor?: string,
+    selectedSize?: string,
+    selectedCombination?: string
+  ) => void;
   updateQuantity: (index: number, quantity: number) => void;
   removeFromCart: (index: number) => void;
   clearCart: () => void;
@@ -61,34 +68,43 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     quantity = 1,
     selectedMaterial?: string,
     selectedColor?: string,
-    selectedSize?: string
+    selectedSize?: string,
+    selectedCombination?: string
   ) => {
+    const maxStock = typeof product.stock === 'number' ? Math.max(1, product.stock) : 99;
+    const finalCombination = selectedCombination || product.combination || '';
+
     setItems((prev) => {
       const existingIndex = prev.findIndex(
         (item) =>
           item.product.id === product.id &&
           item.selectedMaterial === selectedMaterial &&
           item.selectedColor === selectedColor &&
-          item.selectedSize === selectedSize
+          item.selectedSize === selectedSize &&
+          (item.selectedCombination || '') === finalCombination
       );
 
       if (existingIndex > -1) {
         const next = [...prev];
+        const newQty = Math.min(next[existingIndex].quantity + quantity, maxStock);
         next[existingIndex] = {
           ...next[existingIndex],
-          quantity: next[existingIndex].quantity + quantity
+          quantity: newQty,
+          selectedCombination: finalCombination
         };
         return next;
       }
 
+      const initialQty = Math.min(quantity, maxStock);
       return [
         ...prev,
         {
           product,
-          quantity,
+          quantity: initialQty,
           selectedMaterial: selectedMaterial || product.materials?.[0] || 'Standard Atelier Finish',
           selectedColor: selectedColor || product.colors?.[0] || 'Standard Tone',
-          selectedSize: selectedSize || product.sizes?.[0] || 'Standard Dimension'
+          selectedSize: selectedSize || product.sizes?.[0] || 'Standard Dimension',
+          selectedCombination: finalCombination
         }
       ];
     });
@@ -102,8 +118,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     setItems((prev) => {
+      if (!prev[index]) return prev;
+      const product = prev[index].product;
+      const maxStock = typeof product.stock === 'number' ? Math.max(1, product.stock) : 99;
+      const safeQty = Math.min(quantity, maxStock);
+
       const next = [...prev];
-      next[index] = { ...next[index], quantity };
+      next[index] = { ...next[index], quantity: safeQty };
       return next;
     });
   };

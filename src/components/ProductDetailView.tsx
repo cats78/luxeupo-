@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   ShoppingBag,
   Zap,
@@ -9,8 +9,8 @@ import {
   RotateCcw,
   ArrowLeft,
   Check,
-  Box,
-  Maximize2
+  Maximize2,
+  X
 } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
@@ -33,11 +33,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const [addedAnimation, setAddedAnimation] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // 3D Perspective Tilt state
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, lightX: 50, lightY: 50, isHovered: false });
+  // Optical Magnifier state (No text mentions of "zoom")
+  const [isMagnified, setIsMagnified] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [pointerPos, setPointerPos] = useState({ x: 50, y: 50, px: 0, py: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // 4 Color Swatches matching reference image
+  // 4 Color Swatches
   const colorOptions = [
     { name: 'Cream', hex: '#EBE5DA' },
     { name: 'Charcoal', hex: '#3B4856' },
@@ -45,7 +47,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     { name: 'Forest', hex: '#4F5E4D' },
   ];
 
-  // Exactly the uploaded images, deduplicated, without artificial 4-image padding
+  // Uploaded product images
   const rawImages = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
   const images = Array.from(new Set(rawImages));
   if (images.length === 0) {
@@ -54,48 +56,53 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
   const currentImage = images[activeImageIndex] || images[0];
 
-  // Interactive 3D Perspective Physics
+  const maxStock = typeof product.stock === 'number' ? Math.max(1, product.stock) : 99;
+  const isOnePiece = product.stock === 1;
+
+  // Handle pointer tracking for optical magnifier
+  const updatePointer = useCallback((clientX: number, clientY: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const px = Math.max(0, Math.min(rect.width, clientX - rect.left));
+    const py = Math.max(0, Math.min(rect.height, clientY - rect.top));
+    const x = (px / rect.width) * 100;
+    const y = (py / rect.height) * 100;
+    setPointerPos({ x, y, px, py });
+  }, []);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!imageContainerRef.current) return;
-    const rect = imageContainerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({
-      rotateY: x * 16, // max 8 deg left/right
-      rotateX: -y * 16, // max 8 deg up/down
-      lightX: (x + 0.5) * 100,
-      lightY: (y + 0.5) * 100,
-      isHovered: true,
-    });
+    setIsHovering(true);
+    updatePointer(e.clientX, e.clientY);
   };
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!imageContainerRef.current || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const rect = imageContainerRef.current.getBoundingClientRect();
-    const x = (touch.clientX - rect.left) / rect.width - 0.5;
-    const y = (touch.clientY - rect.top) / rect.height - 0.5;
-    setTilt({
-      rotateY: x * 12,
-      rotateX: -y * 12,
-      lightX: (x + 0.5) * 100,
-      lightY: (y + 0.5) * 100,
-      isHovered: true,
-    });
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsHovering(true);
+    updatePointer(e.clientX, e.clientY);
   };
 
   const handleMouseLeave = () => {
-    setTilt({ rotateX: 0, rotateY: 0, lightX: 50, lightY: 50, isHovered: false });
+    setIsHovering(false);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 0) return;
+    setIsHovering(true);
+    updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+  };
+
+  // Toggle clicked magnification view
+  const handleToggleMagnification = () => {
+    setIsMagnified((prev) => !prev);
   };
 
   const handleAddToCart = () => {
-    addToCart(product, quantity, undefined, colorOptions[selectedColorIndex].name, undefined);
+    addToCart(product, quantity, undefined, colorOptions[selectedColorIndex].name, undefined, product.combination);
     setAddedAnimation(true);
     setTimeout(() => setAddedAnimation(false), 1800);
   };
 
   const handleBuyNowClick = () => {
-    onBuyNow(product, quantity, colorOptions[selectedColorIndex].name);
+    onBuyNow(product, Math.min(quantity, maxStock), colorOptions[selectedColorIndex].name);
   };
 
   return (
@@ -117,20 +124,23 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         {/* 2-Column Product Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
-          {/* Left: Gallery with Thumbnails (only if multiple exist) + 3D Interactive Depth Main Viewer */}
+          {/* Left: Gallery with Thumbnails + High-Precision Optical Magnifier Viewer */}
           <div className="lg:col-span-7 flex flex-col sm:flex-row gap-4 items-start">
             
-            {/* Thumbnails only shown if more than 1 image was actually uploaded */}
+            {/* Thumbnails (only if multiple images exist) */}
             {images.length > 1 && (
               <div className="flex sm:flex-col gap-3 order-2 sm:order-1 shrink-0 overflow-x-auto sm:overflow-visible w-full sm:w-auto pb-2 sm:pb-0">
                 {images.map((thumb, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all shrink-0 bg-white cursor-pointer ${
+                    onClick={() => {
+                      setActiveImageIndex(idx);
+                      setIsMagnified(false);
+                    }}
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white cursor-pointer ${
                       activeImageIndex === idx
-                        ? 'border-[#B88E52] ring-2 ring-[#B88E52]/20 shadow-sm scale-102'
+                        ? 'border-[#B88E52] ring-2 ring-[#B88E52]/20 shadow-md scale-102'
                         : 'border-[#E7E5E4] hover:border-[#D6D3D1] opacity-75 hover:opacity-100'
                     }`}
                   >
@@ -144,64 +154,70 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               </div>
             )}
 
-            {/* Large Main Interactive Depth Viewer */}
+            {/* Interactive Image Container with Optical Magnifier */}
             <div
-              ref={imageContainerRef}
+              ref={containerRef}
+              onClick={handleToggleMagnification}
               onMouseMove={handleMouseMove}
+              onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
               onTouchMove={handleTouchMove}
-              onTouchEnd={handleMouseLeave}
-              style={{ perspective: '1100px' }}
-              className="order-1 sm:order-2 flex-1 w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white border border-[#E7E5E4] shadow-sm relative select-none cursor-crosshair group"
+              onTouchEnd={() => setIsHovering(false)}
+              className={`order-1 sm:order-2 flex-1 w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white border border-[#E7E5E4] shadow-sm relative select-none group transition-all ${
+                isMagnified ? 'cursor-zoom-out' : 'cursor-zoom-in'
+              }`}
             >
-              {/* 3D Tilted Image Container */}
-              <div
-                style={{
-                  transform: `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale3d(${tilt.isHovered ? 1.03 : 1}, ${tilt.isHovered ? 1.03 : 1}, 1)`,
-                  transition: tilt.isHovered ? 'transform 0.08s ease-out' : 'transform 0.5s ease-out',
-                }}
-                className="w-full h-full relative"
-              >
+              {/* Base / Magnified Image Rendering */}
+              <div className="w-full h-full relative overflow-hidden">
                 <img
                   src={currentImage}
                   alt={product.name}
-                  className="w-full h-full object-cover object-center transition-opacity duration-300 pointer-events-none"
-                />
-
-                {/* Dynamic Realistic Specular Sheen Overlay */}
-                <div
                   style={{
-                    background: tilt.isHovered
-                      ? `radial-gradient(circle at ${tilt.lightX}% ${tilt.lightY}%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 45%, rgba(0,0,0,0.08) 100%)`
-                      : 'transparent',
-                    transition: 'background 0.1s ease-out',
+                    transformOrigin: `${pointerPos.x}% ${pointerPos.y}%`,
+                    transform: isMagnified
+                      ? 'scale(2.5)'
+                      : isHovering
+                      ? 'scale(1.08)'
+                      : 'scale(1)',
+                    transition: isMagnified ? 'transform 0.15s ease-out' : 'transform 0.3s ease-out',
                   }}
-                  className="absolute inset-0 pointer-events-none"
+                  className="w-full h-full object-cover object-center pointer-events-none will-change-transform"
                 />
-              </div>
 
-              {/* Interactive Depth Badge */}
-              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-normal pointer-events-none border border-white/10">
-                <Box className="w-3 h-3 text-[#B88E52]" />
-                <span>3D Depth Perspective</span>
+                {/* Optical Floating Loupe Lens (Active during hover when not in full-magnify mode) */}
+                {isHovering && !isMagnified && (
+                  <div
+                    style={{
+                      left: `${pointerPos.px}px`,
+                      top: `${pointerPos.py}px`,
+                      transform: 'translate(-50%, -50%)',
+                      backgroundImage: `url(${currentImage})`,
+                      backgroundPosition: `${pointerPos.x}% ${pointerPos.y}%`,
+                      backgroundSize: '350%',
+                    }}
+                    className="absolute w-36 h-36 rounded-full border-2 border-[#D4AF37] shadow-2xl pointer-events-none hidden md:block bg-no-repeat ring-4 ring-black/15 z-20 backdrop-blur-sm"
+                  />
+                )}
               </div>
 
               {/* Multi-angle indicator */}
               {images.length > 1 && (
-                <div className="absolute bottom-3 right-3 px-2 py-1 rounded bg-black/50 backdrop-blur-md text-white text-[11px] font-medium pointer-events-none">
+                <div className="absolute bottom-3 left-3 px-2 py-1 rounded-md bg-black/55 backdrop-blur-md text-white text-[11px] font-medium pointer-events-none z-10">
                   {activeImageIndex + 1} / {images.length}
                 </div>
               )}
 
-              {/* Fullscreen Zoom preview trigger */}
+              {/* Fullscreen Expand Action Button (Top-Right) */}
               <button
                 type="button"
-                onClick={() => setIsFullscreen(true)}
-                className="absolute top-3 right-3 p-2 rounded-md bg-white/90 hover:bg-white text-[#1C1917] shadow-sm transition-all opacity-0 group-hover:opacity-100"
-                title="Expand Fullscreen View"
-                aria-label="Expand Fullscreen View"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFullscreen(true);
+                }}
+                className="absolute top-3 right-3 p-2 rounded-lg bg-white/90 hover:bg-white text-[#1C1917] shadow-md transition-all opacity-0 group-hover:opacity-100 z-10 cursor-pointer border border-[#E7E5E4]"
+                aria-label="Expand view"
               >
-                <Maximize2 className="w-3.5 h-3.5" />
+                <Maximize2 className="w-4 h-4" />
               </button>
             </div>
 
@@ -221,9 +237,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                className="absolute top-6 right-6 px-4 py-2 bg-white/20 hover:bg-white/40 text-white rounded-md text-xs uppercase tracking-wider"
+                className="absolute top-6 right-6 p-2.5 bg-white/20 hover:bg-white/40 text-white rounded-full cursor-pointer transition-colors"
+                aria-label="Close"
               >
-                Close (ESC)
+                <X className="w-5 h-5" />
               </button>
             </div>
           )}
@@ -231,10 +248,27 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           {/* Right: Product Info & Actions */}
           <div className="lg:col-span-5 space-y-6">
             
-            {/* Title */}
-            <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#1C1917] tracking-wide">
-              {product.name}
-            </h1>
+            {/* Title & Combination Badge */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-[#FAF8F5] text-[#B88E52] border border-[#E8DFC9]">
+                  {product.category}
+                </span>
+                {product.combination && (
+                  <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#1C1917] text-[#D4AF37]">
+                    Combination: {product.combination}
+                  </span>
+                )}
+                {isOnePiece && (
+                  <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-[#B88E52] text-white">
+                    Only 1 piece available
+                  </span>
+                )}
+              </div>
+              <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#1C1917] tracking-wide">
+                {product.name}
+              </h1>
+            </div>
 
             {/* Pricing Row: Price, Strikethrough, and Gold Discount Badge */}
             <div className="flex items-center gap-3">
@@ -293,24 +327,37 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               </div>
             </div>
 
-            {/* Quantity Stepper */}
+            {/* Quantity Stepper with Stock Cap */}
             <div className="space-y-2 pt-1">
-              <span className="block text-xs font-normal text-[#1C1917] uppercase tracking-wider">
-                Quantity
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="block text-xs font-normal text-[#1C1917] uppercase tracking-wider">
+                  Quantity
+                </span>
+                {isOnePiece && (
+                  <span className="text-xs font-semibold text-[#B88E52]">
+                    Only 1 piece available
+                  </span>
+                )}
+              </div>
               <div className="inline-flex items-center border border-[#D6D3D1] rounded-md bg-white text-xs">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-1.5 font-normal hover:bg-[#FAF8F5] transition-colors"
+                  className="px-3 py-1.5 font-normal hover:bg-[#FAF8F5] transition-colors cursor-pointer"
                 >
                   -
                 </button>
-                <span className="px-3 py-1.5 font-normal text-[#1C1917] min-w-[2rem] text-center">
+                <span className="px-3 py-1.5 font-semibold text-[#1C1917] min-w-[2rem] text-center">
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-3 py-1.5 font-normal hover:bg-[#FAF8F5] transition-colors"
+                  disabled={quantity >= maxStock}
+                  onClick={() => setQuantity(Math.min(maxStock, quantity + 1))}
+                  className={`px-3 py-1.5 font-normal transition-colors ${
+                    quantity >= maxStock
+                      ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                      : 'hover:bg-[#FAF8F5] cursor-pointer'
+                  }`}
+                  title={quantity >= maxStock ? (isOnePiece ? 'Only 1 piece available' : `Max available: ${maxStock}`) : 'Add quantity'}
                 >
                   +
                 </button>
@@ -321,7 +368,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             <div className="space-y-3 pt-2">
               <button
                 onClick={handleAddToCart}
-                className="w-full py-3.5 px-6 rounded-md bg-[#B88E52] hover:bg-[#A57D43] text-white font-normal text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition-all"
+                className="w-full py-3.5 px-6 rounded-md bg-[#B88E52] hover:bg-[#A57D43] text-white font-normal text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
               >
                 {addedAnimation ? (
                   <>
@@ -338,7 +385,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
               <button
                 onClick={handleBuyNowClick}
-                className="w-full py-3.5 px-6 rounded-md bg-white hover:bg-[#FAF8F5] text-[#1C1917] border border-[#1C1917] font-normal text-sm tracking-wide flex items-center justify-center gap-2 transition-all shadow-sm"
+                className="w-full py-3.5 px-6 rounded-md bg-white hover:bg-[#FAF8F5] text-[#1C1917] border border-[#1C1917] font-normal text-sm tracking-wide flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
               >
                 <Zap className="w-4 h-4 fill-[#1C1917]" />
                 <span>Buy Now</span>
@@ -351,12 +398,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
       </div>
 
-      {/* Value Propositions Bar (Exact match from bottom-right reference image) */}
+      {/* Value Propositions Bar */}
       <div className="bg-white border-t border-[#E7E5E4] py-6 shadow-sm mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             
-            {/* 1. Premium Quality */}
             <div className="flex items-center gap-3.5">
               <div className="w-10 h-10 rounded-full bg-[#FAF5EC] flex items-center justify-center text-[#B88E52] shrink-0">
                 <ShieldCheck className="w-5 h-5 stroke-[1.8]" />
@@ -366,52 +412,49 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   Premium Quality
                 </h4>
                 <p className="text-xs text-[#78716C] font-light">
-                  Built to last
+                  Artisanal Hardwood Frames
                 </p>
               </div>
             </div>
 
-            {/* 2. Free Delivery */}
             <div className="flex items-center gap-3.5">
               <div className="w-10 h-10 rounded-full bg-[#FAF5EC] flex items-center justify-center text-[#B88E52] shrink-0">
                 <Truck className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
                 <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
-                  Free Delivery
+                  Pan-India Delivery
                 </h4>
                 <p className="text-xs text-[#78716C] font-light">
-                  Across India
+                  White-Glove Placement
                 </p>
               </div>
             </div>
 
-            {/* 3. Secure Payment */}
             <div className="flex items-center gap-3.5">
               <div className="w-10 h-10 rounded-full bg-[#FAF5EC] flex items-center justify-center text-[#B88E52] shrink-0">
                 <CreditCard className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
                 <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
-                  Secure Payment
+                  Secure Razorpay
                 </h4>
                 <p className="text-xs text-[#78716C] font-light">
-                  PhonePe &amp; UPI Only
+                  UPI &amp; Cards Accepted
                 </p>
               </div>
             </div>
 
-            {/* 4. Easy Returns */}
             <div className="flex items-center gap-3.5">
               <div className="w-10 h-10 rounded-full bg-[#FAF5EC] flex items-center justify-center text-[#B88E52] shrink-0">
                 <RotateCcw className="w-5 h-5 stroke-[1.8]" />
               </div>
               <div>
                 <h4 className="text-sm font-medium text-[#1C1917] leading-snug">
-                  Easy Returns
+                  10-Year Warranty
                 </h4>
                 <p className="text-xs text-[#78716C] font-light">
-                  7 Days Policy
+                  On Structural Integrity
                 </p>
               </div>
             </div>

@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Plus,
   Search,
   Edit2,
   Trash2,
-  Eye,
   Upload,
   X,
   AlertCircle,
@@ -12,7 +11,7 @@ import {
   Sparkles,
   ExternalLink
 } from 'lucide-react';
-import { Product, Category } from '../../types';
+import { Product, Category, SOFA_COMBINATIONS, DINING_COMBINATIONS } from '../../types';
 import { saveProduct, deleteProduct } from '../../firebase/firestore';
 import { uploadImageToStorage } from '../../firebase/storageUpload';
 
@@ -34,12 +33,13 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   const [modalOpen, setModalOpen] = useState(isAddModalOpen);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
 
   // Form State
   const [name, setName] = useState('');
-  const [category, setCategory] = useState(categories[0]?.name || 'Living Room Furniture');
+  const [category, setCategory] = useState('Sofas');
   const [subcategory, setSubcategory] = useState('');
+  const [combinationOption, setCombinationOption] = useState<string>('3+1+1 Sofa Set');
+  const [customCombination, setCustomCombination] = useState<string>('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState<number>(0);
   const [originalPrice, setOriginalPrice] = useState<number>(0);
@@ -58,20 +58,48 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
 
+  // Ensure 'Sofas' and 'Dining Sets' are always available options
+  const allCategoryOptions = React.useMemo(() => {
+    const defaultList = ['Sofas', 'Dining Sets', 'Beds', 'Chairs', 'Storage', 'Tables'];
+    const passed = categories.map((c) => c.name);
+    return Array.from(new Set([...defaultList, ...passed]));
+  }, [categories]);
+
+  // Determine if category is Sofas or Dining Sets
+  const isSofaCategory = (cat: string) => cat.toLowerCase().includes('sofa');
+  const isDiningCategory = (cat: string) => cat.toLowerCase().includes('dining');
+
+  // Handle category change dynamically updating combinations
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    if (isSofaCategory(newCat)) {
+      setCombinationOption(SOFA_COMBINATIONS[0]);
+      setCustomCombination('');
+    } else if (isDiningCategory(newCat)) {
+      setCombinationOption(DINING_COMBINATIONS[0]);
+      setCustomCombination('');
+    } else {
+      setCombinationOption('');
+      setCustomCombination('');
+    }
+  };
+
   const openAddModal = () => {
     setEditingProduct(null);
     setName('');
-    setCategory(categories[0]?.name || 'Sofas & Seating');
+    setCategory('Sofas');
+    setCombinationOption(SOFA_COMBINATIONS[0]);
+    setCustomCombination('');
     setSubcategory('');
     setDescription('');
     setPrice(0);
     setOriginalPrice(0);
     setDiscountPercent(0);
-    setStock(5);
+    setStock(1);
     setInStock(true);
     setIsFeatured(false);
     setImages([]);
-    setMaterialsInput('Italian Bouclé, Hardwood Frame, Champagne Brass Plinth');
+    setMaterialsInput('Italian Bouclé, Hardwood Frame, Brass Plinth');
     setColorsInput('Oatmeal Cream, Midnight Charcoal, Emerald');
     setSizesInput('Standard (92" x 40"), Grand (108" x 44")');
     setModalOpen(true);
@@ -80,19 +108,50 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   const openEditModal = (prod: Product) => {
     setEditingProduct(prod);
     setName(prod.name);
-    setCategory(prod.category);
+    const prodCat = prod.category || 'Sofas';
+    setCategory(prodCat);
     setSubcategory(prod.subcategory || '');
     setDescription(prod.description);
     setPrice(prod.price);
     setOriginalPrice(prod.originalPrice || prod.price);
     setDiscountPercent(prod.discountPercent || 0);
-    setStock(prod.stock);
+    setStock(typeof prod.stock === 'number' ? prod.stock : 1);
     setInStock(prod.inStock);
     setIsFeatured(prod.isFeatured);
     setImages(Array.from(new Set((prod.images || []).filter(Boolean))));
     setMaterialsInput(prod.materials?.join(', ') || '');
     setColorsInput(prod.colors?.join(', ') || '');
     setSizesInput(prod.sizes?.join(', ') || '');
+
+    // Restore combination
+    const savedComb = prod.combination || '';
+    if (isSofaCategory(prodCat)) {
+      if (SOFA_COMBINATIONS.includes(savedComb as any)) {
+        setCombinationOption(savedComb);
+        setCustomCombination('');
+      } else if (savedComb) {
+        setCombinationOption('Custom Combination');
+        setCustomCombination(savedComb);
+      } else {
+        setCombinationOption(SOFA_COMBINATIONS[0]);
+        setCustomCombination('');
+      }
+    } else if (isDiningCategory(prodCat)) {
+      if (DINING_COMBINATIONS.includes(savedComb as any)) {
+        setCombinationOption(savedComb);
+        setCustomCombination('');
+      } else if (savedComb) {
+        setCombinationOption('Custom Combination');
+        setCustomCombination(savedComb);
+      } else {
+        setCombinationOption(DINING_COMBINATIONS[0]);
+        setCustomCombination('');
+      }
+    } else {
+      setCombinationOption(savedComb ? 'Custom Combination' : '');
+      setCustomCombination(savedComb);
+    }
+
     setModalOpen(true);
   };
 
@@ -110,7 +169,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     }
   };
 
-  // Image Upload Handler (PNG, JPG, JPEG validation, saves to Firebase Storage, avoids duplicates)
+  // Image Upload Handler
   const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError('');
@@ -132,20 +191,19 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
           setUploadProgress(overallProgress);
         });
 
-        // Avoid duplicate uploads
         if (!images.includes(downloadUrl) && !newUrls.includes(downloadUrl)) {
           newUrls.push(downloadUrl);
         }
       }
 
-      setImages(prev => {
+      setImages((prev) => {
         const combined = [...prev];
         for (const u of newUrls) {
           if (!combined.includes(u)) combined.push(u);
         }
         return combined;
       });
-      setUploadSuccessMsg(`${files.length} image(s) processed and added successfully.`);
+      setUploadSuccessMsg(`${files.length} image(s) uploaded successfully.`);
       setTimeout(() => setUploadSuccessMsg(''), 4000);
     } catch (err: any) {
       console.error('Product image upload error:', err);
@@ -164,11 +222,11 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
       setUploadError('This image URL is already in the gallery.');
       return;
     }
-    setImages(prev => [...prev, trimmed]);
+    setImages((prev) => [...prev, trimmed]);
   };
 
   const handleRemoveImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
@@ -181,21 +239,30 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
 
     setSaving(true);
     try {
+      // Calculate final combination string
+      let finalCombination = '';
+      if (combinationOption === 'Custom Combination') {
+        finalCombination = customCombination.trim();
+      } else if (combinationOption) {
+        finalCombination = combinationOption.trim();
+      }
+
       const productData: Partial<Product> = {
         name: name.trim(),
         category,
         subcategory: subcategory.trim() || '',
+        combination: finalCombination,
         description: description.trim(),
         price: Number(price) || 0,
         originalPrice: Number(originalPrice) || Number(price) || 0,
         discountPercent: Number(discountPercent) || 0,
-        stock: Number(stock) || 0,
+        stock: Number(stock) || 1,
         inStock: Boolean(inStock),
         isFeatured: Boolean(isFeatured),
         images: Array.from(new Set(images.filter(Boolean))),
-        materials: materialsInput.split(',').map(s => s.trim()).filter(Boolean),
-        colors: colorsInput.split(',').map(s => s.trim()).filter(Boolean),
-        sizes: sizesInput.split(',').map(s => s.trim()).filter(Boolean),
+        materials: materialsInput.split(',').map((s) => s.trim()).filter(Boolean),
+        colors: colorsInput.split(',').map((s) => s.trim()).filter(Boolean),
+        sizes: sizesInput.split(',').map((s) => s.trim()).filter(Boolean),
       };
 
       if (editingProduct) {
@@ -207,7 +274,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
       const savedName = productData.name;
       setEditingProduct(null);
       setModalOpen(false);
-      setSuccessToast(`Product "${savedName}" saved and synchronized live to Firestore!`);
+      setSuccessToast(`Product "${savedName}" saved with combination "${finalCombination || 'None'}" and synchronized live to Firestore!`);
       setTimeout(() => setSuccessToast(''), 4500);
       if (onCloseAddModal) onCloseAddModal();
     } catch (err: any) {
@@ -231,10 +298,12 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   };
 
   // Filtered Products
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          p.id.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch =
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.combination && p.combination.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      p.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -248,7 +317,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
             Product Catalogue Management
           </h2>
           <p className="text-xs text-[#736D64] mt-0.5">
-            Create, edit, pricing updates, and multi-image uploads for showroom pieces.
+            Create, edit, assign Sofa/Dining combinations, pricing updates, and multi-image uploads.
           </p>
         </div>
 
@@ -276,7 +345,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by title, SKU, or category..."
+            placeholder="Search by title, combination, SKU, or category..."
             className="w-full pl-9 pr-3 py-2 text-xs border border-[#DCD5C9] rounded-sm bg-white focus:border-[#9A7B4F] focus:outline-none"
           />
         </div>
@@ -287,8 +356,8 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
           className="px-3 py-2 text-xs border border-[#DCD5C9] rounded-sm bg-white focus:border-[#9A7B4F] focus:outline-none"
         >
           <option value="All">All Categories ({products.length})</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.name}>{c.name}</option>
+          {allCategoryOptions.map((c) => (
+            <option key={c} value={c}>{c}</option>
           ))}
         </select>
       </div>
@@ -300,7 +369,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
             <thead className="bg-[#FAF9F6] text-[#736D64] uppercase tracking-wider border-b border-[#E8E2D9]">
               <tr>
                 <th className="p-3.5 font-semibold">Piece</th>
-                <th className="p-3.5 font-semibold">Category</th>
+                <th className="p-3.5 font-semibold">Category &amp; Combination</th>
                 <th className="p-3.5 font-semibold">Selling Price</th>
                 <th className="p-3.5 font-semibold">Stock</th>
                 <th className="p-3.5 font-semibold">Status</th>
@@ -327,10 +396,14 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                     </div>
                   </td>
                   <td className="p-3.5 text-[#5C564D]">
-                    <div>{p.category}</div>
-                    {p.subcategory && (
+                    <div className="font-medium text-[#121214]">{p.category}</div>
+                    {p.combination ? (
+                      <span className="inline-block mt-0.5 px-2 py-0.5 bg-[#FAF8F5] border border-[#B88E52]/40 text-[#B88E52] text-[10px] font-semibold rounded">
+                        {p.combination}
+                      </span>
+                    ) : p.subcategory ? (
                       <div className="text-[10px] text-[#8C867D]">{p.subcategory}</div>
-                    )}
+                    ) : null}
                   </td>
                   <td className="p-3.5">
                     <span className="font-bold text-[#121214]">
@@ -343,7 +416,9 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                     )}
                   </td>
                   <td className="p-3.5">
-                    <span className="font-semibold text-[#121214]">{p.stock} units</span>
+                    <span className={`font-semibold ${p.stock === 1 ? 'text-[#B88E52]' : 'text-[#121214]'}`}>
+                      {p.stock} {p.stock === 1 ? 'unit (Only 1)' : 'units'}
+                    </span>
                   </td>
                   <td className="p-3.5">
                     <span className={`px-2 py-0.5 text-[10px] font-bold rounded-sm uppercase ${
@@ -463,13 +538,88 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                   </label>
                   <select
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none bg-white"
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none bg-white font-medium"
                   >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
+                    {allCategoryOptions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* Dynamic Category-Based Combinations (Sofas vs Dining Sets vs Custom) */}
+              <div className="p-4 bg-[#FAF8F5] border border-[#B88E52]/40 rounded-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block uppercase tracking-wider font-bold text-[#121214]">
+                    {isSofaCategory(category)
+                      ? 'Sofa Combination (Automatic Category Options)'
+                      : isDiningCategory(category)
+                      ? 'Dining Combination (Automatic Category Options)'
+                      : 'Combination / Configuration'}
+                  </label>
+                  <span className="text-[10px] text-[#B88E52] font-semibold">
+                    {isSofaCategory(category) ? 'Sofas Predefined' : isDiningCategory(category) ? 'Dining Sets Predefined' : 'General'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[#736D64] mb-1 font-medium">
+                      Select Predefined Combination
+                    </label>
+                    <select
+                      value={combinationOption}
+                      onChange={(e) => setCombinationOption(e.target.value)}
+                      className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none bg-white font-medium"
+                    >
+                      {isSofaCategory(category) && (
+                        <>
+                          <optgroup label="Sofa Combinations">
+                            {SOFA_COMBINATIONS.map((sc) => (
+                              <option key={sc} value={sc}>{sc}</option>
+                            ))}
+                          </optgroup>
+                        </>
+                      )}
+
+                      {isDiningCategory(category) && (
+                        <>
+                          <optgroup label="Dining Combinations">
+                            {DINING_COMBINATIONS.map((dc) => (
+                              <option key={dc} value={dc}>{dc}</option>
+                            ))}
+                          </optgroup>
+                        </>
+                      )}
+
+                      <optgroup label="Custom Configuration">
+                        <option value="Custom Combination">Custom Combination (Enter below)</option>
+                        {!isSofaCategory(category) && !isDiningCategory(category) && (
+                          <option value="">None / Not Applicable</option>
+                        )}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  {/* Custom Combination Text Input */}
+                  {(combinationOption === 'Custom Combination' || (!isSofaCategory(category) && !isDiningCategory(category))) && (
+                    <div>
+                      <label className="block text-[#736D64] mb-1 font-medium">
+                        Custom Combination Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={customCombination}
+                        onChange={(e) => setCustomCombination(e.target.value)}
+                        placeholder="e.g. 1+T, 1+2+3, 3+1+1 or custom"
+                        className="w-full px-3 py-2 border border-[#B88E52] bg-white rounded-sm focus:outline-none font-medium text-[#121214]"
+                      />
+                      <p className="text-[10px] text-[#736D64] mt-1">
+                        Enter any supplier-specific or custom combination name to save.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -483,7 +633,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                     type="text"
                     value={subcategory}
                     onChange={(e) => setSubcategory(e.target.value)}
-                    placeholder="e.g. Sectional Sofas"
+                    placeholder="e.g. Sectional Sofas, Velvet Armchairs"
                     className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F] focus:outline-none"
                   />
                 </div>
@@ -544,18 +694,19 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
 
                 <div>
                   <label className="block font-semibold text-[#121214] mb-1">
-                    Stock Quantity
+                    Stock Quantity (1 for One-Piece)
                   </label>
                   <input
                     type="number"
+                    min={0}
                     value={stock}
                     onChange={(e) => setStock(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm bg-white"
+                    className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm bg-white font-semibold"
                   />
                 </div>
               </div>
 
-              {/* Product Images (PNG/JPG validation, multi-image, preview) */}
+              {/* Product Images */}
               <div className="space-y-3">
                 <label className="block uppercase tracking-wider font-semibold text-[#121214]">
                   Product Images (PNG, JPG, JPEG accepted • Max 10MB each) *

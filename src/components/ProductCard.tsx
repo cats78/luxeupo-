@@ -21,7 +21,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     setIsAdding(true);
-    addToCart(product, 1);
+    addToCart(product, 1, undefined, undefined, undefined, product.combination);
     setTimeout(() => setIsAdding(false), 800);
   };
 
@@ -47,6 +47,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+          {product.stock === 1 && (
+            <span className="inline-block px-2 py-0.5 bg-[#B88E52] text-white text-[10px] font-semibold tracking-wider uppercase rounded-sm shadow-sm">
+              Only 1 piece
+            </span>
+          )}
+          {product.combination && (
+            <span className="inline-block px-2 py-0.5 bg-[#121214]/90 text-[#E5D5BA] text-[10px] font-medium tracking-wider rounded-sm shadow-sm">
+              {product.combination}
+            </span>
+          )}
           {product.isFeatured && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#121214] text-[#E5D5BA] text-[10px] font-normal tracking-widest uppercase rounded-sm shadow-sm">
               <Sparkles className="w-2.5 h-2.5 text-[#C5A880]" />
