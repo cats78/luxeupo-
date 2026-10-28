@@ -25,6 +25,59 @@ export const DINING_COMBINATIONS = [
 
 export type DiningCombination = typeof DINING_COMBINATIONS[number];
 
+export interface ColorOption {
+  name: string;
+  hex: string;
+}
+
+export const FURNITURE_COLORS: ColorOption[] = [
+  { name: 'Ivory Cream', hex: '#F5F2EB' },
+  { name: 'Warm Beige', hex: '#D9CEB8' },
+  { name: 'Oatmeal', hex: '#EBE5DA' },
+  { name: 'Warm Taupe', hex: '#B3A293' },
+  { name: 'Charcoal Grey', hex: '#374151' },
+  { name: 'Midnight Black', hex: '#1C1917' },
+  { name: 'Pure White', hex: '#FFFFFF' },
+  { name: 'Cognac Brown', hex: '#8E5E3B' },
+  { name: 'Walnut Brown', hex: '#5C4033' },
+  { name: 'Tan Leather', hex: '#A77044' },
+  { name: 'Emerald Green', hex: '#1B4D3E' },
+  { name: 'Forest Green', hex: '#4F5E4D' },
+  { name: 'Olive Green', hex: '#6B7A58' },
+  { name: 'Navy Blue', hex: '#1E3A5F' },
+  { name: 'Royal Blue', hex: '#2B4C7E' },
+  { name: 'Slate Blue', hex: '#4B6584' },
+  { name: 'Champagne Gold', hex: '#D4AF37' },
+  { name: 'Mustard Ochre', hex: '#E5A93C' },
+  { name: 'Rust Terracotta', hex: '#B7410E' },
+  { name: 'Burgundy Wine', hex: '#671D28' },
+  { name: 'Dusty Rose', hex: '#C98A8F' },
+  { name: 'Sage Green', hex: '#9CAF88' },
+];
+
+export function getColorHex(colorName: string): string {
+  if (!colorName) return '#B88E52';
+  const clean = colorName.toLowerCase().trim();
+  const found = FURNITURE_COLORS.find(
+    (c) => c.name.toLowerCase() === clean || clean.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(clean)
+  );
+  if (found) return found.hex;
+
+  // Keyword fallbacks
+  if (clean.includes('white') || clean.includes('ivory')) return '#FDFBF7';
+  if (clean.includes('black') || clean.includes('ebony')) return '#1C1917';
+  if (clean.includes('cream') || clean.includes('oat')) return '#EBE5DA';
+  if (clean.includes('beige')) return '#D9CEB8';
+  if (clean.includes('grey') || clean.includes('gray') || clean.includes('charcoal')) return '#3B4856';
+  if (clean.includes('brown') || clean.includes('cognac') || clean.includes('tan') || clean.includes('wood')) return '#8E5E3B';
+  if (clean.includes('green') || clean.includes('emerald') || clean.includes('forest') || clean.includes('sage') || clean.includes('olive')) return '#4F5E4D';
+  if (clean.includes('blue') || clean.includes('navy')) return '#1E3A5F';
+  if (clean.includes('gold') || clean.includes('mustard') || clean.includes('yellow')) return '#D4AF37';
+  if (clean.includes('red') || clean.includes('rust') || clean.includes('burgundy') || clean.includes('wine')) return '#671D28';
+
+  return '#B88E52';
+}
+
 export interface Product {
   id: string;
   name: string;

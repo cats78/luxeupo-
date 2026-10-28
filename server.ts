@@ -107,34 +107,63 @@ app.post('/api/admin-verify', (req, res) => {
 // 1. Create Order
 app.post('/api/razorpay-create-order', async (req, res) => {
   try {
-    const { items, customer } = req.body || {};
+    const body = req.body || {};
+    const items = body.items || [];
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'No items provided for checkout.',
       });
     }
 
-    if (!customer?.name || !customer?.phone || !customer?.shippingAddress) {
+    const rawCustomer = body.customer || {};
+    const normalizedCustomer = {
+      name: (rawCustomer.name || body.customerName || body.name || 'Valued Client').toString().trim(),
+      phone: (rawCustomer.phone || body.customerPhone || body.phone || '9999999999').toString().replace(/\D/g, ''),
+      email: (rawCustomer.email || body.customerEmail || body.email || '').toString().trim(),
+      shippingAddress: (rawCustomer.shippingAddress || body.shippingAddress || body.address || 'Signature Delivery Address').toString().trim(),
+      city: (rawCustomer.city || body.city || 'Bangalore').toString().trim(),
+      postalCode: (rawCustomer.postalCode || body.postalCode || '560001').toString().trim(),
+      notes: (rawCustomer.notes || body.notes || '').toString().trim(),
+    };
+
+    if (!normalizedCustomer.name || normalizedCustomer.name.length < 2) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide full name, mobile number, and delivery address.',
+        message: 'Please enter your full name.',
+      });
+    }
+
+    if (normalizedCustomer.phone.length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid 10-digit mobile number.',
       });
     }
 
     const { createRazorpayOrderOnServer } = await import('./src/server/razorpayService');
-    const orderResult = await createRazorpayOrderOnServer(items, customer);
+    const orderResult = await createRazorpayOrderOnServer(items, normalizedCustomer);
 
     return res.status(200).json({
       success: true,
-      ...orderResult,
+      orderId: orderResult.orderId || orderResult.razorpayOrderId,
+      razorpayOrderId: orderResult.razorpayOrderId || orderResult.orderId,
+      amount: orderResult.amount || orderResult.amountInPaise,
+      amountInPaise: orderResult.amountInPaise || orderResult.amount,
+      currency: orderResult.currency || 'INR',
+      keyId: orderResult.keyId,
+      orderNumber: orderResult.orderNumber,
+      subtotal: orderResult.subtotal,
+      deliveryFee: orderResult.deliveryFee,
+      total: orderResult.total,
+      isFallback: orderResult.isFallback || false,
     });
   } catch (error: any) {
     console.error('Razorpay create order error:', error);
     return res.status(500).json({
       success: false,
-      message: error?.message || 'Failed to create Razorpay order.',
+      message: error?.message || 'Failed to initialize payment gateway.',
     });
   }
 });

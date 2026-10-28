@@ -9,9 +9,10 @@ import {
   AlertCircle,
   Check,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Palette
 } from 'lucide-react';
-import { Product, Category, SOFA_COMBINATIONS, DINING_COMBINATIONS } from '../../types';
+import { Product, Category, SOFA_COMBINATIONS, DINING_COMBINATIONS, FURNITURE_COLORS, getColorHex } from '../../types';
 import { saveProduct, deleteProduct } from '../../firebase/firestore';
 import { uploadImageToStorage } from '../../firebase/storageUpload';
 
@@ -49,14 +50,63 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   const [isFeatured, setIsFeatured] = useState<boolean>(false);
   const [images, setImages] = useState<string[]>([]);
   const [materialsInput, setMaterialsInput] = useState('');
-  const [colorsInput, setColorsInput] = useState('');
   const [sizesInput, setSizesInput] = useState('');
+
+  // Easy Color Selection System for Admin
+  const [selectedColors, setSelectedColors] = useState<string[]>([
+    'Ivory Cream',
+    'Warm Beige',
+    'Charcoal Grey',
+    'Cognac Brown',
+  ]);
+  const [customColorName, setCustomColorName] = useState('');
 
   const [uploadError, setUploadError] = useState('');
   const [successToast, setSuccessToast] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
+
+  // Toggle single color
+  const handleToggleColor = (colorName: string) => {
+    setSelectedColors((prev) =>
+      prev.includes(colorName) ? prev.filter((c) => c !== colorName) : [...prev, colorName]
+    );
+  };
+
+  // Select all colors at once
+  const handleSelectAllColors = () => {
+    setSelectedColors(FURNITURE_COLORS.map((c) => c.name));
+  };
+
+  // Select popular neutral colors
+  const handleSelectNeutrals = () => {
+    setSelectedColors([
+      'Ivory Cream',
+      'Warm Beige',
+      'Oatmeal',
+      'Warm Taupe',
+      'Charcoal Grey',
+      'Midnight Black',
+      'Pure White',
+    ]);
+  };
+
+  // Clear all colors
+  const handleClearColors = () => {
+    setSelectedColors([]);
+  };
+
+  // Add custom color name
+  const handleAddCustomColor = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const clean = customColorName.trim();
+    if (!clean) return;
+    if (!selectedColors.includes(clean)) {
+      setSelectedColors((prev) => [...prev, clean]);
+    }
+    setCustomColorName('');
+  };
 
   // Ensure 'Sofas' and 'Dining Sets' are always available options
   const allCategoryOptions = React.useMemo(() => {
@@ -100,7 +150,8 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     setIsFeatured(false);
     setImages([]);
     setMaterialsInput('Italian Bouclé, Hardwood Frame, Brass Plinth');
-    setColorsInput('Oatmeal Cream, Midnight Charcoal, Emerald');
+    setSelectedColors(['Ivory Cream', 'Warm Beige', 'Charcoal Grey', 'Cognac Brown']);
+    setCustomColorName('');
     setSizesInput('Standard (92" x 40"), Grand (108" x 44")');
     setModalOpen(true);
   };
@@ -120,7 +171,12 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     setIsFeatured(prod.isFeatured);
     setImages(Array.from(new Set((prod.images || []).filter(Boolean))));
     setMaterialsInput(prod.materials?.join(', ') || '');
-    setColorsInput(prod.colors?.join(', ') || '');
+    if (Array.isArray(prod.colors) && prod.colors.length > 0) {
+      setSelectedColors(prod.colors);
+    } else {
+      setSelectedColors(['Ivory Cream', 'Warm Beige', 'Charcoal Grey', 'Cognac Brown']);
+    }
+    setCustomColorName('');
     setSizesInput(prod.sizes?.join(', ') || '');
 
     // Restore combination
@@ -261,7 +317,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
         isFeatured: Boolean(isFeatured),
         images: Array.from(new Set(images.filter(Boolean))),
         materials: materialsInput.split(',').map((s) => s.trim()).filter(Boolean),
-        colors: colorsInput.split(',').map((s) => s.trim()).filter(Boolean),
+        colors: selectedColors.length > 0 ? selectedColors : ['Ivory Cream', 'Warm Beige', 'Charcoal Grey'],
         sizes: sizesInput.split(',').map((s) => s.trim()).filter(Boolean),
       };
 
@@ -794,13 +850,143 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
               </div>
 
               {/* Variants Configuration */}
-              <div className="space-y-3 pt-2 border-t border-[#E8E2D9]">
-                <h4 className="font-semibold text-[#121214] uppercase tracking-wider">
-                  Variants &amp; Options (Comma-separated)
+              <div className="space-y-4 pt-2 border-t border-[#E8E2D9]">
+                <h4 className="font-semibold text-[#121214] uppercase tracking-wider flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-[#9A7B4F]" />
+                  <span>Furniture Colors &amp; Specifications</span>
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                {/* Color Selection Palette */}
+                <div className="bg-[#FAF9F6] p-4 rounded-xl border border-[#E8E2D9] space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-[#121214]">
+                        Select Colors for this Piece
+                      </label>
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#B88E52]/15 text-[#B88E52]">
+                        {selectedColors.length} selected
+                      </span>
+                    </div>
+
+                    {/* Quick Selection Buttons */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleSelectAllColors}
+                        className="px-2.5 py-1 text-[11px] font-semibold rounded bg-[#B88E52] hover:bg-[#A57D43] text-white transition-colors cursor-pointer shadow-xs"
+                      >
+                        Select All Colors
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSelectNeutrals}
+                        className="px-2.5 py-1 text-[11px] font-semibold rounded bg-white hover:bg-[#E8DFC9] text-[#1C1917] border border-[#DCD5C9] transition-colors cursor-pointer"
+                      >
+                        Popular Neutrals
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClearColors}
+                        className="px-2.5 py-1 text-[11px] font-semibold rounded bg-white hover:bg-red-50 text-red-700 border border-red-200 transition-colors cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Clickable Color Chips Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-56 overflow-y-auto p-1 pr-2">
+                    {FURNITURE_COLORS.map((col) => {
+                      const isSelected = selectedColors.includes(col.name);
+                      return (
+                        <button
+                          key={col.name}
+                          type="button"
+                          onClick={() => handleToggleColor(col.name)}
+                          className={`flex items-center gap-2 p-2 rounded-lg border text-left text-xs transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-[#B88E52] bg-[#FAF0DD] text-[#1C1917] font-semibold ring-2 ring-[#B88E52]/30 shadow-xs'
+                              : 'border-[#E7E5E4] bg-white text-[#57534E] hover:border-[#B88E52]/60 hover:bg-[#FAF8F5]'
+                          }`}
+                        >
+                          <span
+                            className="w-4 h-4 rounded-full border border-black/20 shrink-0 shadow-inner"
+                            style={{ backgroundColor: col.hex }}
+                          />
+                          <span className="truncate flex-1">{col.name}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#B88E52] shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Active Selected Tags Display */}
+                  {selectedColors.length > 0 && (
+                    <div className="pt-2 border-t border-[#E8E2D9] space-y-1.5">
+                      <span className="text-[11px] uppercase tracking-wider text-[#736D64] font-semibold block">
+                        Active Selected Colors ({selectedColors.length}):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedColors.map((colName) => (
+                          <span
+                            key={colName}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-[#D6C7B2] text-xs font-medium text-[#1C1917] shadow-xs"
+                          >
+                            <span
+                              className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0"
+                              style={{ backgroundColor: getColorHex(colName) }}
+                            />
+                            <span>{colName}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleColor(colName)}
+                              className="text-[#8C867D] hover:text-red-700 transition-colors cursor-pointer"
+                              title="Remove"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Custom Color Input */}
+                  <div className="pt-2 border-t border-[#E8E2D9] flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <span className="text-[11px] text-[#736D64] font-medium shrink-0">
+                      Or add custom color:
+                    </span>
+                    <div className="flex gap-2 w-full sm:w-auto flex-1">
+                      <input
+                        type="text"
+                        value={customColorName}
+                        onChange={(e) => setCustomColorName(e.target.value)}
+                        placeholder="e.g. Royal Turquoise, Marigold Velvet"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCustomColor();
+                          }
+                        }}
+                        className="flex-1 px-3 py-1.5 text-xs border border-[#DCD5C9] rounded-sm bg-white focus:border-[#9A7B4F] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomColor}
+                        className="px-3 py-1.5 text-xs font-semibold bg-[#1C1917] text-[#D4AF37] hover:bg-black rounded-sm transition-colors cursor-pointer"
+                      >
+                        Add Color
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Materials & Sizes */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#736D64] mb-1">Materials</label>
+                    <label className="block text-[#736D64] text-xs mb-1 font-semibold uppercase tracking-wider">
+                      Materials (Comma-separated)
+                    </label>
                     <input
                       type="text"
                       value={materialsInput}
@@ -810,17 +996,9 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[#736D64] mb-1">Colors</label>
-                    <input
-                      type="text"
-                      value={colorsInput}
-                      onChange={(e) => setColorsInput(e.target.value)}
-                      placeholder="Ivory Cream, Charcoal, Emerald"
-                      className="w-full px-3 py-2 border border-[#DCD5C9] rounded-sm focus:border-[#9A7B4F]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[#736D64] mb-1">Sizes / Dimensions</label>
+                    <label className="block text-[#736D64] text-xs mb-1 font-semibold uppercase tracking-wider">
+                      Sizes / Dimensions (Comma-separated)
+                    </label>
                     <input
                       type="text"
                       value={sizesInput}
